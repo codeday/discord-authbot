@@ -19,9 +19,9 @@ class AuthCommands(commands.Cog, name="Authentication"):
         results = lookup_user(user)
         if len(results) == 1:
             user = results[0]
-            ctx.send(str(user))
+            await ctx.send(str(user))
         else:
-            ctx.send('')
+            await ctx.send('')
 
 
 def setup(bot):
