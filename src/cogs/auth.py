@@ -17,8 +17,8 @@ class AuthCommands(commands.Cog, name="Authentication"):
     async def check_clear(self, ctx, user):
         user = id_from_mention(user)
         results = lookup_user(user)
-        if results['length'] == 1:
-            user = results['users'][0]
+        if len(results) == 1:
+            user = results[0]
             ctx.send(str(user))
         else:
             ctx.send('')
