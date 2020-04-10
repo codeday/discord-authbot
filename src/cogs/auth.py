@@ -1,6 +1,7 @@
 import json
 import os
 
+from discord import Color
 from discord.ext import commands
 
 from utils.auth0 import lookup_user
@@ -14,6 +15,8 @@ class AuthCommands(commands.Cog, name="Authentication"):
         self.bot = bot
         self.role_student = int(os.getenv('ROLE_STUDENT'))
         self.role_volunteer = int(os.getenv('ROLE_VOLUNTEER'))
+        self.pronoun_role_color = int(os.getenv('PRONOUN_ROLE_COLOR', '10070710'))
+        self.alert_channel = int(os.getenv('ALERT_CHANNEL'))
 
     @commands.command(name='check-clear', hidden=True)
     @commands.has_any_role('Global Staff')
@@ -24,7 +27,7 @@ class AuthCommands(commands.Cog, name="Authentication"):
         await ctx.send(json.dumps(results, indent=2, sort_keys=True))
 
     @commands.command(name='update')
-    async def update_user(self, ctx, user):
+    async def update_user(self, ctx: commands.context.Context, user):
         """Updates a discord user"""
         user = id_from_mention(user)
         results = lookup_user(user)
@@ -37,6 +40,20 @@ class AuthCommands(commands.Cog, name="Authentication"):
                     await user.add_roles(ctx.guild.get_role(self.role_student))
                 if account['user_metadata']['volunteer']:
                     await user.add_roles(ctx.guild.get_role(self.role_volunteer))
+                if account['user_metadata']['pronoun'] != 'unspecified':
+                    pronoun_roles = [role for role in ctx.guild.roles if role.color.value == self.pronoun_role_color]
+                    role = next((role for role in pronoun_roles if role.name == account['user_metadata']['pronoun']),
+                                None)
+                    if role is None:
+                        role = await ctx.guild.create_role(
+                            name=account['user_metadata']['pronoun'],
+                            color=Color(self.pronoun_role_color)
+                        )
+                        await ctx.guild.get_channel(self.alert_channel).send(f'New pronoun role created, <@{role.id}>.')
+                    for r in pronoun_roles:
+                        if r in user.roles:
+                            await user.remove_roles(r)
+                    await user.add_roles(role)
             await ctx.message.add_reaction('👌')
         elif len(results) == 0:
             await ctx.send('''No CodeDay account is linked to that user!''')
