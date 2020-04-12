@@ -129,12 +129,12 @@ and ban the user <@{user.id}>?')]
                             await msgs[0].add_reaction('🚫')
                             await msgs[0].add_reaction('✅')
 
-                            def check(reaction, user):
-                                return user.id == payload.user_id and (
+                            def check(reaction, u):
+                                return u.id == payload.user_id and (
                                             str(reaction.emoji) == '🚫' or str(reaction.emoji) == '✅')
 
                             try:
-                                reaction, user = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
+                                reaction, u = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
                             except asyncio.TimeoutError:
                                 await msgs[0].delete()
                             else:
