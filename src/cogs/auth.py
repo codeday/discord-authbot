@@ -144,7 +144,7 @@ and ban the user <@{user.id}>?')]
                                 elif str(reaction.emoji) == '✅':
                                     await role.delete(reason=f'Pronoun role deletion requested by <@{payload.user_id}>')
                                     await user.ban(reason=f'Pronoun role ban requested by <@{payload.user_id}>')
-                                    await msg.edit(content=msg.content.replace('Alert: ', '', 0))
+                                    await msg.edit(content=msg.content.replace('Alert: ', '', 1))
                                     await msg.channel.send('Ok, I have deleted the role and banned the user')
                             for msg in msgs:
                                 await msg.delete(delay=5)
