@@ -100,7 +100,7 @@ Please react with ✅ to approve, 🚫 to delete the role, 🔨 to delete the ro
 
                         def check(reaction, user):
                             return user.id == payload.user_id and (
-                                        str(reaction.emoji) == '🚫' or str(reaction.emoji) == '✅')
+                                    str(reaction.emoji) == '🚫' or str(reaction.emoji) == '✅')
 
                         try:
                             reaction, user = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
@@ -131,7 +131,7 @@ and ban the user <@{user.id}>?')]
 
                             def check(reaction, u):
                                 return u.id == payload.user_id and (
-                                            str(reaction.emoji) == '🚫' or str(reaction.emoji) == '✅')
+                                        str(reaction.emoji) == '🚫' or str(reaction.emoji) == '✅')
 
                             try:
                                 reaction, u = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
