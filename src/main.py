@@ -3,13 +3,14 @@ import traceback
 from os import getenv
 
 from discord.ext import commands
+from utils.SuperBot import SuperBot
 
 from utils.auth0 import lookup_user
 
 logging.basicConfig(level=logging.INFO)
 
 BOT_TOKEN = getenv('BOT_TOKEN')
-bot = commands.Bot(command_prefix='a~')
+bot = SuperBot(command_prefix='a~')
 
 initial_cogs = ['cogs.auth']
 for cog in initial_cogs:
