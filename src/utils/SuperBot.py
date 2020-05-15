@@ -10,7 +10,7 @@ _default = _DefaultRepr()
 
 
 class SuperBot(commands.Bot):
-    def __init__(self, command_prefix, help_command=_default, description=None, **options):
+    def __init__(self, command_prefix, help_command=None, description=None, **options):
         super(SuperBot, self).__init__(command_prefix, help_command, description, **options)
 
     async def process_commands(self, message):
