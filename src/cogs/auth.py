@@ -74,7 +74,6 @@ Please react with ✅ to approve, 🚫 to delete the role, 🔨 to delete the ro
                 if r in user.roles:
                     await user.remove_roles(r)
             await user.add_roles(role)
-
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
         if (
