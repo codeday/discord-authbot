@@ -2,9 +2,7 @@ import logging
 import traceback
 from os import getenv
 
-from discord.ext import commands
 from utils.SuperBot import SuperBot
-
 from utils.auth0 import lookup_user
 
 logging.basicConfig(level=logging.INFO)
@@ -36,8 +34,7 @@ async def on_member_join(member):
             '''Hello, Human! Welcome to the CodeDay discord server!
 Please authenticate with your CodeDay account by clicking the following link:
 https://discord0.codeday.xyz
-'''
-        )
+''')
 
 
 bot.run(BOT_TOKEN, bot=True, reconnect=True)
