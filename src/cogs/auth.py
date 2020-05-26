@@ -6,7 +6,7 @@ import discord
 from discord import Color
 from discord.ext import commands
 
-from utils.auth0 import lookup_user
+from utils.auth0 import lookup_user, lookup_all
 from utils.person import id_from_mention
 
 
@@ -46,6 +46,16 @@ class AuthCommands(commands.Cog, name="Authentication"):
 This should not be possible, please contact an admin''')
         else:
             pass
+
+    @commands.command(name='update_all')
+    async def update_all(self, ctx: commands.context.Context):
+        await ctx.message.add_reaction('⌛')
+        for account in lookup_all():
+            user = ctx.guild.get_member(int(account['user_metadata']['discord_id']))
+            if user:
+                await self.update_user(ctx, account, user)
+        await ctx.message.clear_reaction('⌛')
+        await ctx.message.add_reaction('👌')
 
     async def update_user(self, ctx: commands.context.Context, account, user):
         await user.edit(nick=account['name'])
