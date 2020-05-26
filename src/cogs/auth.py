@@ -50,10 +50,14 @@ This should not be possible, please contact an admin''')
     @commands.command(name='update_all')
     async def update_all(self, ctx: commands.context.Context):
         await ctx.message.add_reaction('⌛')
-        for account in lookup_all():
+        users = lookup_all()
+        for account in users:
             user = ctx.guild.get_member(int(account['user_metadata']['discord_id']))
             if user:
-                await self.update_user(ctx, account, user)
+                try:
+                    await self.update_user(ctx, account, user)
+                except:
+                    pass
         await ctx.message.clear_reaction('⌛')
         await ctx.message.add_reaction('👌')
 
