@@ -24,4 +24,4 @@ def lookup_all(domain=os.getenv('AUTH_DOMAIN'),
                                          client_secret,
                                          'https://{}/api/v2/'.format(domain))['access_token']
     mgmt = Auth0(domain, token)
-    return mgmt.users.list(q='user_metadata.discord_id')['users']
+    return mgmt.users.list(q='user_metadata.discord_id=*')['users']
