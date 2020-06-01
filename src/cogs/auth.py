@@ -42,8 +42,6 @@ class AuthCommands(commands.Cog, name="Authentication"):
             await ctx.message.add_reaction('👌')
         elif len(results) == 0:
             await ctx.send('''No CodeDay account is linked to that user!''')
-            await ctx.send('''More than one CodeDay account is linked to your discord.
-This should not be possible, please contact an admin''')
         else:
             pass
 
