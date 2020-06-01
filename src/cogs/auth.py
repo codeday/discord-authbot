@@ -17,16 +17,17 @@ class AuthCommands(commands.Cog, name="Authentication"):
         self.bot = bot
         self.role_student = int(os.getenv('ROLE_STUDENT'))
         self.role_volunteer = int(os.getenv('ROLE_VOLUNTEER'))
-        self.pronoun_role_color = int(os.getenv('PRONOUN_ROLE_COLOR', '10070710'))
+        self.pronoun_role_color = int(
+            os.getenv('PRONOUN_ROLE_COLOR', '10070710'))
         self.alert_channel = int(os.getenv('ALERT_CHANNEL'))
 
-    @commands.command(name='check-clear', hidden=True)
+    @commands.command(name='account', hidden=True)
     @commands.has_any_role('Global Staff')
     async def check_clear(self, ctx, user):
-        """Lookup a discord users clear account"""
+        """Lookup a discord users CodeDay account"""
         user = id_from_mention(user)
         results = lookup_user(user)
-        await ctx.send(json.dumps(results, indent=2, sort_keys=True))
+        await ctx.send(f"[{user.username}](https://manage.auth0.com/dashboard/us/srnd/users/{user.user_id})")
 
     @commands.command(name='update')
     async def update(self, ctx: commands.context.Context, user):
@@ -36,7 +37,8 @@ class AuthCommands(commands.Cog, name="Authentication"):
         results = lookup_user(user)
         if len(results) == 1:
             account = results[0]
-            user = ctx.guild.get_member(int(account['user_metadata']['discord_id']))
+            user = ctx.guild.get_member(
+                int(account['user_metadata']['discord_id']))
             if user:  # ensure user is in server
                 debug = await self.update_user(ctx, account, user)
                 await ctx.channel.send(debug)
@@ -63,7 +65,10 @@ class AuthCommands(commands.Cog, name="Authentication"):
 
     async def update_user(self, ctx: commands.context.Context, account, user):
         debug = f'updating user {user.name}'
-        await user.edit(nick=f"{account['given_name']} {account['family_name'][0].upper()}")
+        if 'volunteer' in account['user_metadata']:
+            await user.edit(nick=f"{account['given_name']} {account['family_name']}")
+        else:
+            await user.edit(nick=f"{account['given_name']} {account['family_name'][0].upper()}")
         debug += '\n nickname set'
         debug += f'''\n User Metadata:
         ```
@@ -77,7 +82,8 @@ class AuthCommands(commands.Cog, name="Authentication"):
                 await user.add_roles(ctx.guild.get_role(self.role_volunteer))
                 debug += '\n adding volunteer role'
         if account['user_metadata']['pronoun'] != 'unspecified':
-            pronoun_roles = [role for role in ctx.guild.roles if role.color.value == self.pronoun_role_color]
+            pronoun_roles = [
+                role for role in ctx.guild.roles if role.color.value == self.pronoun_role_color]
             role = next((role for role in pronoun_roles if role.name == account['user_metadata']['pronoun']),
                         None)
             if role is None:
@@ -117,7 +123,8 @@ Please react with ✅ to approve, 🚫 to delete the role, 🔨 to delete the ro
                     await msg.delete(delay=5)
                 elif payload.emoji.name == '🚫':
                     if len(msg.raw_role_mentions) == 1:
-                        role = self.bot.get_guild(payload.guild_id).get_role(msg.raw_role_mentions[0])
+                        role = self.bot.get_guild(payload.guild_id).get_role(
+                            msg.raw_role_mentions[0])
                         msgs = [
                             await msg.channel.send(f'Are you sure you would like to delete the role {role.mention}?')]
                         await msgs[0].add_reaction('🚫')
@@ -125,7 +132,7 @@ Please react with ✅ to approve, 🚫 to delete the role, 🔨 to delete the ro
 
                         def check(reaction, user):
                             return user.id == payload.user_id and (
-                                    str(reaction.emoji) == '🚫' or str(reaction.emoji) == '✅')
+                                str(reaction.emoji) == '🚫' or str(reaction.emoji) == '✅')
 
                         try:
                             reaction, user = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
@@ -145,7 +152,8 @@ Please react with ✅ to approve, 🚫 to delete the role, 🔨 to delete the ro
                                 Please complete required actions manually''')
                 elif payload.emoji.name == '🔨':
                     if len(msg.raw_role_mentions) == 1:
-                        role = self.bot.get_guild(payload.guild_id).get_role(msg.raw_role_mentions[0])
+                        role = self.bot.get_guild(payload.guild_id).get_role(
+                            msg.raw_role_mentions[0])
                         if len(msg.mentions) == 1:
                             user = msg.mentions[0]
                             msgs = [
@@ -156,7 +164,7 @@ and ban the user <@{user.id}>?')]
 
                             def check(reaction, u):
                                 return u.id == payload.user_id and (
-                                        str(reaction.emoji) == '🚫' or str(reaction.emoji) == '✅')
+                                    str(reaction.emoji) == '🚫' or str(reaction.emoji) == '✅')
 
                             try:
                                 reaction, u = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
