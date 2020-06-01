@@ -97,6 +97,7 @@ Please react with ✅ to approve, 🚫 to delete the role, 🔨 to delete the ro
             await user.add_roles(role)
             debug += f'\n adding role {role.name}'
         await ctx.guild.get_channel(self.alert_channel).send(debug)
+
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
         if (
