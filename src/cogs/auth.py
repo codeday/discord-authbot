@@ -62,7 +62,7 @@ class AuthCommands(commands.Cog, name="Authentication"):
 
     async def update_user(self, ctx: commands.context.Context, account, user):
         debug = f'updating user {user.name}'
-        await user.edit(nick=account['name'])
+        await user.edit(nick=f"{account['given_name']} {account['family_name'][0].upper()}")
         debug += '\n nickname set'
         debug += f'''\n User Metadata:
         ```
