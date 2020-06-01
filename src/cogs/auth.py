@@ -52,7 +52,7 @@ class AuthCommands(commands.Cog, name="Authentication"):
         print(f'updating {len(ctx.guild.members)} users')
         for user in ctx.guild.members:
             results = lookup_user(user.id)
-            if len(results == 1):
+            if len(results) == 1:
                 account = results[0]
                 try:
                     await self.update_user(ctx, account, user)
