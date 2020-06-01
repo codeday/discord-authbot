@@ -1,13 +1,12 @@
 import asyncio
 import json
 import os
-from time import sleep
 
 import discord
 from discord import Color
 from discord.ext import commands
 
-from utils.auth0 import lookup_user, lookup_all
+from utils.auth0 import lookup_user
 from utils.person import id_from_mention
 
 
@@ -50,14 +49,12 @@ class AuthCommands(commands.Cog, name="Authentication"):
     @commands.command(name='update_all')
     async def update_all(self, ctx: commands.context.Context):
         await ctx.message.add_reaction('⌛')
-        users = lookup_all()
-        print(f'updating {len(users)} users')
-        for account in users:
+        for user in ctx.guild.members:
+            account = lookup_user(user)[0]
             user = ctx.guild.get_member(int(account['user_metadata']['discord_id']))
             if user:
                 try:
                     await self.update_user(ctx, account, user)
-                    sleep(1)
                 except Exception as E:
                     print(Exception)
                     pass

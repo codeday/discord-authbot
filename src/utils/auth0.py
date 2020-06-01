@@ -16,7 +16,7 @@ def lookup_user(user: int,
     return mgmt.users.list(q=f'user_metadata.discord_id:"{str(user)}"')['users']
 
 
-def lookup_all(domain=os.getenv('AUTH_DOMAIN'),
+def lookup_all(domain=os.getenv('AUTH_DOMAIN'),  # Does not actually get all users, limited by auth0
                client_id=os.getenv('AUTH_CLIENT_ID'),
                client_secret=os.getenv('AUTH_CLIENT_SECRET')):
     get_token = GetToken(domain)
