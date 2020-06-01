@@ -38,7 +38,8 @@ class AuthCommands(commands.Cog, name="Authentication"):
             account = results[0]
             user = ctx.guild.get_member(int(account['user_metadata']['discord_id']))
             if user:  # ensure user is in server
-                await self.update_user(ctx, account, user)
+                debug = await self.update_user(ctx, account, user)
+                await ctx.channel.send(debug)
             await ctx.message.add_reaction('👌')
         elif len(results) == 0:
             await ctx.send('''No CodeDay account is linked to that user!''')
@@ -96,7 +97,7 @@ Please react with ✅ to approve, 🚫 to delete the role, 🔨 to delete the ro
                     debug += f'\n removing role {r.name}'
             await user.add_roles(role)
             debug += f'\n adding role {role.name}'
-        await ctx.channel.send(debug)
+            return debug
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
