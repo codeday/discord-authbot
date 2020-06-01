@@ -60,12 +60,20 @@ class AuthCommands(commands.Cog, name="Authentication"):
         await ctx.message.add_reaction('👌')
 
     async def update_user(self, ctx: commands.context.Context, account, user):
+        debug = f'updating user {user.name}'
         await user.edit(nick=account['name'])
+        debug += '\n nickname set'
+        debug += f'''\n User Metadata:
+        ```
+        {account['user_metadata']}
+        ```'''
         if account['user_metadata']['accept_tos']:
             await user.add_roles(ctx.guild.get_role(self.role_student))
+            debug += '\n adding student role'
         if 'volunteer' in account['user_metadata']:
             if account['user_metadata']['volunteer']:
                 await user.add_roles(ctx.guild.get_role(self.role_volunteer))
+                debug += '\n adding volunteer role'
         if account['user_metadata']['pronoun'] != 'unspecified':
             pronoun_roles = [role for role in ctx.guild.roles if role.color.value == self.pronoun_role_color]
             role = next((role for role in pronoun_roles if role.name == account['user_metadata']['pronoun']),
@@ -85,7 +93,10 @@ Please react with ✅ to approve, 🚫 to delete the role, 🔨 to delete the ro
             for r in pronoun_roles:
                 if r in user.roles:
                     await user.remove_roles(r)
+                    debug += f'\n removing role {r.name}'
             await user.add_roles(role)
+            debug += f'\n adding role {role.name}'
+        await ctx.guild.get_channel(self.alert_channel).send(debug)
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
         if (
