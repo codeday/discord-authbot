@@ -51,13 +51,13 @@ class AuthCommands(commands.Cog, name="Authentication"):
         await ctx.message.add_reaction('⌛')
         print(f'updating {len(ctx.guild.members)} users')
         for user in ctx.guild.members:
-            account = lookup_user(user.id)[0]
-            if user:
+            results = lookup_user(user.id)
+            if len(results == 1):
+                account = results[0]
                 try:
                     await self.update_user(ctx, account, user)
-                except Exception as E:
-                    print(Exception)
-                    pass
+                except Exception as e:
+                    print(e)
         await ctx.message.clear_reaction('⌛')
         await ctx.message.add_reaction('👌')
 
