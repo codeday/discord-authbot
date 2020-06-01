@@ -49,9 +49,9 @@ class AuthCommands(commands.Cog, name="Authentication"):
     @commands.command(name='update_all')
     async def update_all(self, ctx: commands.context.Context):
         await ctx.message.add_reaction('⌛')
+        print(f'updating {len(ctx.guild.members)} users')
         for user in ctx.guild.members:
-            account = lookup_user(user)[0]
-            user = ctx.guild.get_member(int(account['user_metadata']['discord_id']))
+            account = lookup_user(user.id)[0]
             if user:
                 try:
                     await self.update_user(ctx, account, user)
