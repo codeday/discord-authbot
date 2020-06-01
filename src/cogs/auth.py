@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+from time import sleep
 
 import discord
 from discord import Color
@@ -56,6 +57,7 @@ class AuthCommands(commands.Cog, name="Authentication"):
             if user:
                 try:
                     await self.update_user(ctx, account, user)
+                    sleep(1)
                 except Exception as E:
                     print(Exception)
                     pass
