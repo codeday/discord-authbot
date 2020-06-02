@@ -27,7 +27,10 @@ class AuthCommands(commands.Cog, name="Authentication"):
         """Lookup a discord users CodeDay account"""
         user = id_from_mention(user)
         results = lookup_user(user)
-        await ctx.send(f"[{user.username}](https://manage.auth0.com/dashboard/us/srnd/users/{user.user_id})")
+        if (len(results) == 0):
+            await ctx.send('Not linked')
+        else:
+            await ctx.send(f"[{results[0].username}](https://manage.auth0.com/dashboard/us/srnd/users/{results[0].user_id})")
 
     @commands.command(name='update')
     async def update(self, ctx: commands.context.Context, user):
@@ -64,23 +67,27 @@ class AuthCommands(commands.Cog, name="Authentication"):
         await ctx.message.add_reaction('👌')
 
     async def update_user(self, ctx: commands.context.Context, account, user):
-        debug = f'updating user {user.name}'
-        if 'volunteer' in account['user_metadata']:
-            await user.edit(nick=f"{account['given_name']} {account['family_name']}")
-        else:
-            await user.edit(nick=f"{account['given_name']} {account['family_name'][0].upper()}")
-        debug += '\n nickname set'
-        debug += f'''\n User Metadata:
+        debug = f'updating <@{user.id}>'
+        nick = f"{account['given_name']} {account['family_name'][0].upper()}"
+
+        if 'display_name_format' in account['user_metadata']:
+            nick = account['name']
+        elif 'volunteer' in account['user_metadata']:
+            nick = f"{account['given_name']} {account['family_name']}"
+
+        await user.edit(nick=nick)
+        debug += f"\n nickname set to {nick}"
+        debug += f'''\n metadata:
         ```
         {account['user_metadata']}
         ```'''
-        if account['user_metadata']['accept_tos']:
-            await user.add_roles(ctx.guild.get_role(self.role_student))
-            debug += '\n adding student role'
+        await user.add_roles(ctx.guild.get_role(self.role_student))
+        debug += '\n adding student role'
         if 'volunteer' in account['user_metadata']:
             if account['user_metadata']['volunteer']:
                 await user.add_roles(ctx.guild.get_role(self.role_volunteer))
                 debug += '\n adding volunteer role'
+
         if account['user_metadata']['pronoun'] != 'unspecified':
             pronoun_roles = [
                 role for role in ctx.guild.roles if role.color.value == self.pronoun_role_color]
