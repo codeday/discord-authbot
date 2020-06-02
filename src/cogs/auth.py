@@ -30,7 +30,7 @@ class AuthCommands(commands.Cog, name="Authentication"):
         if (len(results) == 0):
             await ctx.send('Not linked')
         else:
-            await ctx.send(f"[{results[0].username}](https://manage.auth0.com/dashboard/us/srnd/users/{results[0].user_id})")
+            await ctx.send(f"[{results[0]['username']}](https://manage.auth0.com/dashboard/us/srnd/users/{results[0]['user_id']})")
 
     @commands.command(name='update')
     async def update(self, ctx: commands.context.Context, user):
