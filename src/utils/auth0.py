@@ -21,13 +21,13 @@ def get_auth0_token(domain=os.getenv('AUTH_DOMAIN'),
     return cached_token
 
 
-def lookup_user(user: int):
-    token = get_auth0_token()
+def lookup_user(user: int, domain=os.getenv('AUTH_DOMAIN'),):
+    token = get_auth0_token(domain=domain)
     mgmt = Auth0(domain, token)
     return mgmt.users.list(q=f'user_metadata.discord_id:"{str(user)}"')['users']
 
 
-def lookup_all():
-    token = get_auth0_token()
+def lookup_all(domain=os.getenv('AUTH_DOMAIN')):
+    token = get_auth0_token(domain=domain)
     mgmt = Auth0(domain, token)
     return mgmt.users.list(q='user_metadata.discord_id=*')['users']
