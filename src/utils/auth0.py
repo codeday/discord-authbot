@@ -18,7 +18,7 @@ def get_auth0_token(domain=os.getenv('AUTH_DOMAIN'),
                                                     'https://{}/api/v2/'.format(domain))
         cached_token['expires_at'] = datetime.now() \
             + timedelta(seconds=(cached_token['expires_in'] - 60))
-    return cached_token
+    return cached_token['access_token']
 
 
 def lookup_user(user: int, domain=os.getenv('AUTH_DOMAIN'),):
