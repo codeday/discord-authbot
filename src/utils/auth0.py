@@ -11,7 +11,7 @@ def get_auth0_token(domain=os.getenv('AUTH_DOMAIN'),
                     client_secret=os.getenv('AUTH_CLIENT_SECRET')):
     global cached_token
     cached_token
-    if cached_token != None or cached_token['expires_at'] <= datetime.now():
+    if cached_token == None or cached_token['expires_at'] <= datetime.now():
         get_token = GetToken(domain)
         cached_token = get_token.client_credentials(client_id,
                                                     client_secret,
