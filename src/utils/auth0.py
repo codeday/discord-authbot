@@ -21,10 +21,20 @@ def get_auth0_token(domain=os.getenv('AUTH_DOMAIN'),
     return cached_token['access_token']
 
 
+def add_roles(mgmt, users):
+    def join_dict(a, b):
+        temp = dict()
+        temp.update(a)
+        temp.update(b)
+        return temp
+
+    return [join_dict(u, mgmt.users.list_roles(u['user_id'])) for u in users]
+
+
 def lookup_user(user: int, domain=os.getenv('AUTH_DOMAIN'),):
     token = get_auth0_token(domain=domain)
     mgmt = Auth0(domain, token)
-    return mgmt.users.list(q=f'user_metadata.discord_id:"{str(user)}"')['users']
+    return add_roles(mgmt, mgmt.users.list(q=f'user_metadata.discord_id:"{str(user)}"')['users'])
 
 
 def lookup_all(domain=os.getenv('AUTH_DOMAIN')):

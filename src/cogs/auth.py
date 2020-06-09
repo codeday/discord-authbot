@@ -15,11 +15,12 @@ class AuthCommands(commands.Cog, name="Authentication"):
 
     def __init__(self, bot):
         self.bot = bot
-        self.role_student = int(os.getenv('ROLE_STUDENT'))
+        self.role_linked = int(os.getenv('ROLE_LINKED'))
         self.role_volunteer = int(os.getenv('ROLE_VOLUNTEER'))
         self.pronoun_role_color = int(
             os.getenv('PRONOUN_ROLE_COLOR', '10070710'))
         self.alert_channel = int(os.getenv('ALERT_CHANNEL'))
+        self.auth0_volunteer_role = os.getenv('AUTH0_VOLUNTEER')
 
     @commands.command(name='account', hidden=True)
     @commands.has_any_role('Global Staff')
@@ -67,51 +68,57 @@ class AuthCommands(commands.Cog, name="Authentication"):
         await ctx.message.add_reaction('👌')
 
     async def update_user(self, ctx: commands.context.Context, account, user):
-        debug = f'updating <@{user.id}>'
-        nick = f"{account['given_name']} {account['family_name'][0].upper()}"
+        # Calculate initial information:
+        all_pronoun_roles = [
+            role for role in ctx.guild.roles if role.color.value == self.pronoun_role_color]
 
+        # Calculate desired nickname:
+        desired_nick = f"{account['given_name']} {account['family_name'][0].upper()}"
         if 'display_name_format' in account['user_metadata']:
-            nick = account['name']
+            desired_nick = account['name']
         elif 'volunteer' in account['user_metadata']:
-            nick = f"{account['given_name']} {account['family_name']}"
+            desired_nick = f"{account['given_name']} {account['family_name']}"
 
-        await user.edit(nick=nick)
-        debug += f"\n nickname set to {nick}"
-        debug += f'''\n metadata:
-        ```
-        {account['user_metadata']}
-        ```'''
-        await user.add_roles(ctx.guild.get_role(self.role_student))
-        debug += '\n adding student role'
-        if 'volunteer' in account['user_metadata']:
-            if account['user_metadata']['volunteer']:
-                await user.add_roles(ctx.guild.get_role(self.role_volunteer))
-                debug += '\n adding volunteer role'
+        # Calculate desired roles:
+        desired_roles = [ctx.guild.get_role(self.role_linked)]
+        remove_roles = []
 
+        # -- Add volunteer role
+        if len([r for r in account['roles'] if r['id'] == self.auth0_volunteer_role]) > 0:
+            desired_roles.append(ctx.guild.get_role(self.role_volunteer))
+        else:
+            remove_roles.append(ctx.guild.get_role(self.role_volunteer))
+
+        # -- Add pronoun role
         if account['user_metadata']['pronoun'] != 'unspecified':
-            pronoun_roles = [
-                role for role in ctx.guild.roles if role.color.value == self.pronoun_role_color]
-            role = next((role for role in pronoun_roles if role.name == account['user_metadata']['pronoun']),
-                        None)
-            if role is None:
-                role = await ctx.guild.create_role(
+            desired_pronoun_role = next(
+                (role for role in all_pronoun_roles if role.name ==
+                 account['user_metadata']['pronoun']),
+                None
+            )
+            if desired_pronoun_role is None:
+                desired_pronoun_role = await ctx.guild.create_role(
                     name=account['user_metadata']['pronoun'],
                     color=Color(self.pronoun_role_color)
                 )
                 m = await ctx.guild.get_channel(self.alert_channel).send(
-                    f'''Alert: New pronoun role created, {role.mention} \
+                    f'''Alert: New pronoun role created, {desired_pronoun_role.mention} \
 for user <@{account["user_metadata"]["discord_id"]}>
 Please react with ✅ to approve, 🚫 to delete the role, 🔨 to delete the role and ban the user''')
                 await m.add_reaction('✅')
                 await m.add_reaction('🚫')
                 await m.add_reaction('🔨')
-            for r in pronoun_roles:
-                if r in user.roles:
-                    await user.remove_roles(r)
-                    debug += f'\n removing role {r.name}'
-            await user.add_roles(role)
-            debug += f'\n adding role {role.name}'
-            return debug
+
+            for r in all_pronoun_roles:
+                if r in user.roles and r != desired_pronoun_role:
+                    remove_roles.append(r)
+            desired_roles.append(desired_pronoun_role)
+
+        await user.edit(nick=desired_nick)
+        await user.remove_roles(*remove_roles)
+        await user.add_roles(*desired_roles)
+
+        return f"Nickname: {desired_nick}\nAdd roles: {desired_roles}\nRemove roles: {remove_roles}"
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
