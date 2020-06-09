@@ -16,11 +16,10 @@ class AuthCommands(commands.Cog, name="Authentication"):
     def __init__(self, bot):
         self.bot = bot
         self.role_linked = int(os.getenv('ROLE_LINKED'))
-        self.role_volunteer = int(os.getenv('ROLE_VOLUNTEER'))
         self.pronoun_role_color = int(
             os.getenv('PRONOUN_ROLE_COLOR', '10070710'))
         self.alert_channel = int(os.getenv('ALERT_CHANNEL'))
-        self.auth0_volunteer_role = os.getenv('AUTH0_VOLUNTEER')
+        self.auth0_roles = os.getenv('AUTH0_ROLES')
 
     @commands.command(name='account', hidden=True)
     @commands.has_any_role('Global Staff')
@@ -71,6 +70,8 @@ class AuthCommands(commands.Cog, name="Authentication"):
         # Calculate initial information:
         all_pronoun_roles = [
             role for role in ctx.guild.roles if role.color.value == self.pronoun_role_color]
+        auth0_role_map = dict(r.split(':')
+                              for r in self.auth0_roles.split(';'))
 
         # Calculate desired nickname:
         desired_nick = f"{account['given_name']} {account['family_name'][0].upper()}"
@@ -83,11 +84,15 @@ class AuthCommands(commands.Cog, name="Authentication"):
         desired_roles = [ctx.guild.get_role(self.role_linked)]
         remove_roles = []
 
-        # -- Add volunteer role
-        if len([r for r in account['roles'] if r['id'] == self.auth0_volunteer_role]) > 0:
-            desired_roles.append(ctx.guild.get_role(self.role_volunteer))
-        else:
-            remove_roles.append(ctx.guild.get_role(self.role_volunteer))
+        # - Add roles for auth0 roles
+        auth0_desired_roles = [auth0_role_map[r['id']]
+                               for r in account['roles']
+                               if r['id'] in auth0_role_map]
+        desired_roles.extend([ctx.guild.get_role(int(r))
+                              for r in auth0_desired_roles])
+        remove_roles.extend([ctx.guild.get_role(int(r))
+                             for r in auth0_role_map.values()
+                             if r not in auth0_desired_roles])
 
         # -- Add pronoun role
         if account['user_metadata']['pronoun'] != 'unspecified':
@@ -118,7 +123,7 @@ Please react with ✅ to approve, 🚫 to delete the role, 🔨 to delete the ro
         await user.remove_roles(*remove_roles)
         await user.add_roles(*desired_roles)
 
-        return f"Nickname: {desired_nick}\nAdd roles: {desired_roles}\nRemove roles: {remove_roles}"
+        return f"Nickname: {desired_nick}\nAdd roles: {[n.name for n in desired_roles]}\nRemove roles: {[n.name for n in remove_roles]}"
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
