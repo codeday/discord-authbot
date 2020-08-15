@@ -31,9 +31,9 @@ async def on_member_join(member):
         if member.dm_channel is None:
             await member.create_dm()
         await member.dm_channel.send(
-            '''Hello, Human! Welcome to the CodeDay discord server!
-Please authenticate with your CodeDay account by clicking the following link:
-https://discord0.codeday.xyz
+            '''Hello, human! Welcome to the CodeDay Discord server!
+To gain full access, you MUST link your Discord account to a CodeDay account using the link below:
+https://discord0.codeday.org
 ''')
 
 
