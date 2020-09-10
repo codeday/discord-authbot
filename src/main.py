@@ -1,12 +1,22 @@
 import logging
+import sys
 import traceback
 from os import getenv
+
+from raygun4py import raygunprovider
 
 from utils.SuperBot import SuperBot
 from utils.auth0 import lookup_user
 
 logging.basicConfig(level=logging.INFO)
 
+
+def handle_exception(exc_type, exc_value, exc_traceback):
+    cl = raygunprovider.RaygunSender(getenv("RAYGUN_TOKEN"))
+    cl.send_exception(exc_info=(exc_type, exc_value, exc_traceback))
+
+
+sys.excepthook = handle_exception
 BOT_TOKEN = getenv('BOT_TOKEN')
 bot = SuperBot(command_prefix='a~')
 
