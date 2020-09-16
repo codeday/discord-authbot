@@ -52,7 +52,7 @@ class AuthCommands(commands.Cog, name="Authentication"):
                 int(account['user_metadata']['discord_id']))
             if user:  # ensure user is in server
                 debug = await self.update_user(ctx, account, user)
-                await ctx.channel.send(debug)
+                # await ctx.channel.send(debug)
             await ctx.message.add_reaction('👌')
         elif len(results) == 0:
             await ctx.send('''No CodeDay account is linked to that user!''')
