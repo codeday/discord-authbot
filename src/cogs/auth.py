@@ -38,6 +38,7 @@ class AuthCommands(commands.Cog, name="Authentication"):
     async def award_badge(self, ctx, user, emoji, expiresUTC, title='Badge', description='Badge'):
         user = id_from_mention(user)
         add_badge(user, emoji, expiresUTC, title, description)
+        await self.update(ctx, user)
 
     @commands.command(name='update')
     async def update(self, ctx: commands.context.Context, user):
