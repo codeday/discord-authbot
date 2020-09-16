@@ -1,6 +1,6 @@
 import asyncio
-import json
 import os
+from datetime import datetime
 
 import discord
 from discord import Color
@@ -79,6 +79,18 @@ class AuthCommands(commands.Cog, name="Authentication"):
             desired_nick = account['name']
         elif 'volunteer' in account['user_metadata']:
             desired_nick = f"{account['given_name']} {account['family_name']}"
+
+        if 'badges' in account['user_metadata']:
+            badges = account['user_metadata']['badges']
+            if len(badges) > 0:
+                desired_nick += ' '  # Add spacer between name and badges
+                for badge in badges:
+                    if 'emoji' in badge and 'expiresUTC' in badge:
+                        if int(badge['expiresUTC']) > int(datetime.utcnow().timestamp()):
+                            desired_nick += badge['emoji']
+                        else:
+                            # badge is expired. Remove it?
+                            pass
 
         # Calculate desired roles:
         desired_roles = [ctx.guild.get_role(self.role_linked)]
