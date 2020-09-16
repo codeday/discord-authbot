@@ -6,7 +6,7 @@ import discord
 from discord import Color
 from discord.ext import commands
 
-from utils.auth0 import lookup_user
+from utils.auth0 import lookup_user, add_badge
 from utils.person import id_from_mention
 
 
@@ -30,7 +30,14 @@ class AuthCommands(commands.Cog, name="Authentication"):
         if (len(results) == 0):
             await ctx.send('Not linked')
         else:
-            await ctx.send(f"[{results[0]['username']}](https://manage.auth0.com/dashboard/us/srnd/users/{results[0]['user_id']})")
+            await ctx.send(
+                f"[{results[0]['username']}](https://manage.auth0.com/dashboard/us/srnd/users/{results[0]['user_id']})")
+
+    @commands.command(name='add_badge', hidden=True)
+    @commands.has_any_role('Employee')
+    async def award_badge(self, ctx, user, emoji, expiresUTC, title='Badge', description='Badge'):
+        user = id_from_mention(user)
+        add_badge(user, emoji, expiresUTC, title, description)
 
     @commands.command(name='update')
     async def update(self, ctx: commands.context.Context, user):
