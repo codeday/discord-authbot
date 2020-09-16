@@ -22,7 +22,7 @@ class AuthCommands(commands.Cog, name="Authentication"):
         self.auth0_roles = os.getenv('AUTH0_ROLES')
 
     @commands.command(name='account', hidden=True)
-    @commands.has_any_role('Global Staff')
+    @commands.has_any_role('Employee')
     async def check_clear(self, ctx, user):
         """Lookup a discord users CodeDay account"""
         user = id_from_mention(user)
