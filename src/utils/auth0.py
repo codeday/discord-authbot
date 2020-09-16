@@ -1,5 +1,6 @@
 import os
 from datetime import datetime, timedelta
+
 from auth0.v3.authentication import GetToken
 from auth0.v3.management import Auth0
 
@@ -31,10 +32,30 @@ def add_roles(mgmt, users):
     return [join_dict(u, mgmt.users.list_roles(u['user_id'])) for u in users]
 
 
-def lookup_user(user: int, domain=os.getenv('AUTH_DOMAIN'),):
+def lookup_user(user: int, domain=os.getenv('AUTH_DOMAIN'), ):
     token = get_auth0_token(domain=domain)
     mgmt = Auth0(domain, token)
     return add_roles(mgmt, mgmt.users.list(q=f'user_metadata.discord_id:"{str(user)}"')['users'])
+
+
+def add_badge(user: int, emoji, expiresUTC, title, description, domain=os.getenv('AUTH_DOMAIN'), ):
+    token = get_auth0_token(domain=domain)
+    mgmt = Auth0(domain, token)
+    acc = mgmt.users.list(q=f'user_metadata.discord_id:"{str(user)}"')['users'][0]
+    if 'badges' in acc['user_metadata']:
+        badges = acc['user_metadata']['badges']
+    else:
+        badges = []
+    badges.append(
+        {
+            'emoji': emoji,
+            'expiresUTC': expiresUTC,
+            'title': title,
+            'description': description
+        }
+    )
+    mgmt.users.update(acc['user_id'], {'user_metadata': {'badges': badges}})
+    return
 
 
 def lookup_all(domain=os.getenv('AUTH_DOMAIN')):
