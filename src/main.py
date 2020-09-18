@@ -52,7 +52,7 @@ https://discord0.codeday.org
 If you need any support with this process, reply to this message and a staff member will be in touch shortly.
 ''')
     welcome_channel = bot.get_channel(int(welcome_channel_id))
-    last_message = welcome_channel.fetch_message(welcome_channel.last_message_id)
+    last_message = await welcome_channel.fetch_message(welcome_channel.last_message_id)
     print(json.dumps(last_message))
     print(json.dumps(last_message.author))
     print(json.dumps(member))
