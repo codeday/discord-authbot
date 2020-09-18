@@ -1,11 +1,9 @@
-import json
 import logging
 import sys
 import traceback
 from os import getenv
 
 import discord
-from discord import MessageType
 from raygun4py import raygunprovider
 
 from utils.SuperBot import SuperBot
@@ -52,12 +50,7 @@ https://discord0.codeday.org
 If you need any support with this process, reply to this message and a staff member will be in touch shortly.
 ''')
     welcome_channel = bot.get_channel(int(welcome_channel_id))
-    last_message = await welcome_channel.fetch_message(welcome_channel.last_message_id)
-    print(json.dumps(last_message))
-    print(json.dumps(last_message.author))
-    print(json.dumps(member))
-    if last_message.type == MessageType.new_member and last_message.author.id == member.id:
-        last_message.add_reaction('👋')
+    await welcome_channel.send('👋')
 
 
 @bot.event
