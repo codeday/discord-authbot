@@ -60,7 +60,8 @@ If you need any support with this process, reply to this message and a staff mem
 async def on_message(message):
     if type(message.channel) == discord.channel.DMChannel and message.author is not message.channel.me:
         welcome_channel = bot.get_channel(int(welcome_channel_id))
-        welcome_channel.send_message(f'''<@{message.author.id}> just messaged bot:
+        print('new DM')
+        await welcome_channel.send_message(f'''<@{message.author.id}> just messaged bot:
 {message.content}''')
 
 bot.run(BOT_TOKEN, bot=True, reconnect=True)
