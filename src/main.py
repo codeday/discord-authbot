@@ -1,3 +1,4 @@
+import json
 import logging
 import sys
 import traceback
@@ -52,7 +53,10 @@ If you need any support with this process, reply to this message and a staff mem
 ''')
     welcome_channel = bot.get_channel(int(welcome_channel_id))
     last_message = welcome_channel.fetch_message(welcome_channel.last_message_id)
-    if last_message.type == MessageType.new_member and last_message.author == member:
+    print(json.dumps(last_message))
+    print(json.dumps(last_message.author))
+    print(json.dumps(member))
+    if last_message.type == MessageType.new_member and last_message.author.id == member.id:
         last_message.add_reaction('👋')
 
 
