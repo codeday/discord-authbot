@@ -59,5 +59,7 @@ async def on_message(message):
         welcome_channel = bot.get_channel(int(welcome_channel_id))
         await welcome_channel.send(f'''<@{message.author.id}> just sent me a message:
 {message.content}''')
+    else:
+        await bot.process_commands(message)
 
 bot.run(BOT_TOKEN, bot=True, reconnect=True)
