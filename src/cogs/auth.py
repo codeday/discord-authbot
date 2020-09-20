@@ -62,6 +62,7 @@ class AuthCommands(commands.Cog, name="Authentication"):
     @commands.command(name='update_all')
     async def update_all(self, ctx: commands.context.Context):
         await ctx.message.add_reaction('⌛')
+        await self.bot.request_offline_members(ctx.guild)
         print(f'updating {len(ctx.guild.members)} users')
         for user in ctx.guild.members:
             results = lookup_user(user.id)
