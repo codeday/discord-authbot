@@ -1,3 +1,4 @@
 discord.py==1.4.1
 auth0-python==3.13.0
 raygun4py==4.3.0
+tqdm==4.49.0
