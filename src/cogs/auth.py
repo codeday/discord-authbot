@@ -5,6 +5,8 @@ from datetime import datetime
 import discord
 from discord import Color
 from discord.ext import commands
+from raygun4py import raygunprovider
+from tqdm.contrib.discord import tqdm
 
 from utils.auth0 import lookup_user, add_badge
 from utils.person import id_from_mention
@@ -64,14 +66,15 @@ class AuthCommands(commands.Cog, name="Authentication"):
         await ctx.message.add_reaction('⌛')
         await self.bot.request_offline_members(ctx.guild)
         print(f'updating {len(ctx.guild.members)} users')
-        for user in ctx.guild.members:
+        for user in tqdm(ctx.guild.members, token=os.getenv('BOT_TOKEN'), channel_id=ctx.channel.id, mininterval=10):
             results = lookup_user(user.id)
             if len(results) == 1:
                 account = results[0]
                 try:
                     await self.update_user(ctx, account, user)
-                except Exception as e:
-                    print(e)
+                except:
+                    cl = raygunprovider.RaygunSender(os.getenv("RAYGUN_TOKEN"))
+                    cl.send_exception()
         await ctx.message.clear_reaction('⌛')
         await ctx.message.add_reaction('👌')
 
