@@ -47,7 +47,7 @@ async def on_member_join(member):
 To gain full access, you MUST link your Discord account to a CodeDay account using the link below:
 https://discord0.codeday.org
 
-If you need any support with this process, reply to this message and a staff member will be in touch shortly.
+We are glad you are joining our community! If you have any questions or need to speak with a staff member, reply to this message and we will be in touch shortly.
 ''')
     welcome_channel = bot.get_channel(int(welcome_channel_id))
     await welcome_channel.send('👋')
