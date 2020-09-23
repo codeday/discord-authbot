@@ -62,6 +62,8 @@ async def on_message(message):
 {message.content}
 ----
 <@&756583313006788699>''')
+        await message.channel.send(
+            "I've forwarded your message to CodeDay staff, they will respond as fast as possible!")
     else:
         await bot.process_commands(message)
 
