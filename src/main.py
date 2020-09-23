@@ -58,7 +58,10 @@ async def on_message(message):
     if type(message.channel) == discord.channel.DMChannel and message.author is not message.channel.me:
         welcome_channel = bot.get_channel(int(welcome_channel_id))
         await welcome_channel.send(f'''<@{message.author.id}> just sent me a message:
-{message.content}''')
+----
+{message.content}
+----
+Attn: <@728806281640542288>''')
     else:
         await bot.process_commands(message)
 
