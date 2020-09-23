@@ -61,7 +61,7 @@ async def on_message(message):
 ----
 {message.content}
 ----
-Attn: <@728806281640542288>''')
+<@&756583313006788699>''')
     else:
         await bot.process_commands(message)
 
