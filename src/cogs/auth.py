@@ -1,6 +1,5 @@
 import asyncio
 import os
-from datetime import datetime
 
 import discord
 from discord import Color
@@ -8,6 +7,7 @@ from discord.ext import commands
 from raygun4py import raygunprovider
 from tqdm.contrib.discord import tqdm
 
+from utils import badge
 from utils.auth0 import lookup_user, add_badge
 from utils.person import id_from_mention
 
@@ -91,18 +91,11 @@ class AuthCommands(commands.Cog, name="Authentication"):
             desired_nick = account['name']
         elif 'volunteer' in account['user_metadata']:
             desired_nick = f"{account['given_name']} {account['family_name']}"
-
-        if 'badges' in account['user_metadata']:
-            badges = account['user_metadata']['badges']
-            if len(badges) > 0:
-                desired_nick += ' '  # Add spacer between name and badges
-                for badge in badges:
-                    if 'emoji' in badge and 'expiresUTC' in badge:
-                        if int(badge['expiresUTC']) > int(datetime.utcnow().timestamp()):
-                            desired_nick += badge['emoji']
-                        else:
-                            # badge is expired. Remove it?
-                            pass
+        desired_nick += ' '  # add spacer between name and badges
+        for b in badge.get_badges_by_discord_id(account['user_metadata']['discord_id']):
+            if 'emoji' in b:
+                desired_nick += b['emoji']
+        desired_nick = desired_nick.strip()
 
         # Calculate desired roles:
         desired_roles = [ctx.guild.get_role(self.role_linked)]
