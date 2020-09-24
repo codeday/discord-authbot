@@ -49,6 +49,3 @@ def get_badges_by_discord_id(discord_id):
     badges = json.loads(r.text)['data']['account']['getUser']['badges']
     return badges
 
-
-print(get_badges())
-print(get_badges_by_discord_id(486018241244954635))
