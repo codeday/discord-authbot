@@ -5,7 +5,6 @@ import discord
 from discord import Color
 from discord.ext import commands
 from raygun4py import raygunprovider
-from tqdm.contrib.discord import tqdm
 
 from utils import badge
 from utils.auth0 import lookup_user, add_badge
@@ -66,7 +65,7 @@ class AuthCommands(commands.Cog, name="Authentication"):
         await ctx.message.add_reaction('⌛')
         await self.bot.request_offline_members(ctx.guild)
         print(f'updating {len(ctx.guild.members)} users')
-        for user in tqdm(ctx.guild.members, token=os.getenv('BOT_TOKEN'), channel_id=ctx.channel.id, mininterval=10):
+        for user in ctx.guild.members:
             results = lookup_user(user.id)
             if len(results) == 1:
                 account = results[0]
