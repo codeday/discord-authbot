@@ -92,8 +92,8 @@ class AuthCommands(commands.Cog, name="Authentication"):
             desired_nick = f"{account['given_name']} {account['family_name']}"
         desired_nick += ' '  # add spacer between name and badges
         for b in badge.get_badges_by_discord_id(account['user_metadata']['discord_id']):
-            if 'emoji' in b:
-                desired_nick += b['emoji']
+            if 'emoji' in b['details']:
+                desired_nick += b['details']['emoji']
         desired_nick = desired_nick.strip()
 
         # Calculate desired roles:
