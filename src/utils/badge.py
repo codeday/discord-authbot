@@ -47,7 +47,7 @@ def get_badges_by_discord_id(discord_id):
     '''
     r = requests.post(graphql_url, json={'query': query})
     badges = json.loads(r.text)['data']['account']['getUser']['badges']
-    return badges
+    return badges or []
 
 
 def get_badges_by_username(username):
