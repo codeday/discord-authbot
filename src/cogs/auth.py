@@ -5,6 +5,7 @@ import discord
 from discord import Color
 from discord.ext import commands
 from raygun4py import raygunprovider
+import re
 
 from utils import badge
 from utils.auth0 import lookup_user, add_badge
@@ -77,6 +78,15 @@ class AuthCommands(commands.Cog, name="Authentication"):
         await ctx.message.clear_reaction('⌛')
         await ctx.message.add_reaction('👌')
 
+    def de_emojify(self, text):
+        regrex_pattern = re.compile(pattern="["
+                                    u"\U0001F600-\U0001F64F"  # emoticons
+                                    u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                                    u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                                    u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                                    "]+", flags=re.UNICODE)
+        return regrex_pattern.sub(r'', text)
+
     async def update_user(self, ctx: commands.context.Context, account, user):
         # Calculate initial information:
         all_pronoun_roles = [
@@ -90,7 +100,8 @@ class AuthCommands(commands.Cog, name="Authentication"):
             desired_nick = account['name']
         elif 'volunteer' in account['user_metadata']:
             desired_nick = f"{account['given_name']} {account['family_name']}"
-        desired_nick += ' '  # add spacer between name and badges
+        desired_nick += ' '  # add spacer between name and badge
+        desired_nick = self.de_emojify(desired_nick)
         for b in badge.get_badges_by_discord_id(account['user_metadata']['discord_id']):
             if 'emoji' in b['details']:
                 desired_nick += b['details']['emoji']
