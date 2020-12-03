@@ -85,7 +85,7 @@ class AuthCommands(commands.Cog, name="Authentication"):
                                     u"\U0001F680-\U0001F6FF"  # transport & map symbols
                                     u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
                                     "]+", flags=re.UNICODE)
-        return regrex_pattern.sub(r'', text)
+        return regrex_pattern.sub(r'', text).replace("✔", "")
 
     async def update_user(self, ctx: commands.context.Context, account, user):
         # Calculate initial information:
