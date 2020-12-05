@@ -119,7 +119,8 @@ class AuthCommands(commands.Cog, name="Authentication"):
         for b in badge.get_badges_by_discord_id(account['user_metadata']['discord_id']):
             if 'emoji' in b['details']:
                 desired_nick += b['details']['emoji']
-                if not(b['details']['emoji'] in old_badges) and 'earnMessage' in b['details']:
+                if (not(b['details']['emoji'] in old_badges) and 'earnMessage' in b['details']
+                        and self.get_emoji(b['details']['emoji']).length > 0):
                     new_badges.append(b['details']['earnMessage'])
 
         desired_nick = desired_nick.strip()
