@@ -35,10 +35,11 @@ def get_badges_by_discord_id(discord_id):
         getUser(where: {discordId: "''' + str(discord_id) + '''"}, fresh: true) {
           badges {
             details {
-              id,
-              name,
-              description,
+              id
+              name
+              description
               emoji
+              earnMessage
             }
           }
         }
@@ -58,10 +59,11 @@ def get_badges_by_username(username):
         getUser(where: {username: "''' + str(username) + '''"}, fresh: true) {
           badges {
             details {
-              id,
-              name,
-              description,
+              id
+              name
+              description
               emoji
+              earnMessage
             }
           }
         }
@@ -78,7 +80,7 @@ def username_from_discord_id(discord_id):
     {
       account {
         getUser(where: {discordId: "''' + discord_id + '''"}, fresh: true) {
-          username 
+          username
           }
         }
       }
@@ -96,7 +98,8 @@ def grant_badge_by_username(badge_id, username, token):
       }
     }
     '''
-    r = requests.post(graphql_url, json={'query': query}, headers={'Authorization': f'Bearer {token}'})
+    r = requests.post(graphql_url, json={'query': query}, headers={
+                      'Authorization': f'Bearer {token}'})
     return get_badges_by_username(username)
 
 
