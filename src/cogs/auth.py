@@ -6,6 +6,10 @@ from auth0.v3.management import Auth0
 from discord import Color
 from discord.ext import commands
 from raygun4py import raygunprovider
+from emoji import get_emoji_regexp
+import functools
+import operator
+import re
 
 from utils import badge
 from utils.auth0 import lookup_user, add_badge, get_auth0_token
@@ -22,6 +26,13 @@ class AuthCommands(commands.Cog, name="Authentication"):
             os.getenv('PRONOUN_ROLE_COLOR', '10070710'))
         self.alert_channel = int(os.getenv('ALERT_CHANNEL'))
         self.auth0_roles = os.getenv('AUTH0_ROLES')
+
+    def get_emoji(self, em):
+        em_regex = get_emoji_regexp()
+        em_split_emoji = em_regex.split(em)
+        em_split_whitespace = [substr.split() for substr in em_split_emoji]
+        em_split = functools.reduce(operator.concat, em_split_whitespace)
+        return [x for x in em_split if em_regex.match(x)]
 
     @commands.command(name='account', hidden=True)
     @commands.has_any_role('Employee')
@@ -87,7 +98,18 @@ class AuthCommands(commands.Cog, name="Authentication"):
             idx += 1
         await ctx.message.add_reaction('👌')
 
-    async def update_user(self, ctx: commands.context.Context, account, user: discord.Member):
+    def de_emojify(self, text):
+        regrex_pattern = re.compile(pattern="["
+                                    u"\U0001F600-\U0001F64F"  # emoticons
+                                    u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                                    u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                                    u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                                    "]+", flags=re.UNICODE)
+        return regrex_pattern.sub(r'', text).replace("✔", "")
+
+    async def update_user(self, ctx: commands.context.Context, account, user):
+        old_badges = self.get_emoji(user.nick)
+
         # Calculate initial information:
         all_pronoun_roles = [
             role for role in ctx.guild.roles if role.color.value == self.pronoun_role_color]
@@ -100,10 +122,17 @@ class AuthCommands(commands.Cog, name="Authentication"):
             desired_nick = account['name']
         elif 'volunteer' in account['user_metadata']:
             desired_nick = f"{account['given_name']} {account['family_name']}"
-        desired_nick += ' '  # add spacer between name and badges
+        desired_nick += ' '  # add spacer between name and badge
+        desired_nick = self.de_emojify(desired_nick)
+
+        new_badges = []
         for b in badge.get_badges_by_discord_id(account['user_metadata']['discord_id']):
             if 'emoji' in b['details']:
                 desired_nick += b['details']['emoji']
+                if (not(b['details']['emoji'] in old_badges) and 'earnMessage' in b['details']
+                        and len(self.get_emoji(b['details']['emoji'])) > 0):
+                    new_badges.append(b['details']['earnMessage'])
+
         desired_nick = desired_nick.strip()
 
         # Calculate desired roles:
@@ -154,6 +183,9 @@ Would you mind setting your nickname to the following?
 > {desired_nick}''')
         await user.remove_roles(*remove_roles)
         await user.add_roles(*desired_roles)
+
+        for new_badge_msg in new_badges:
+            await user.send(new_badge_msg)
 
         return f"Nickname: {desired_nick}\nAdd roles: {[n.name for n in desired_roles]}\nRemove roles: {[n.name for n in remove_roles]}"
 
