@@ -11,6 +11,7 @@ from discord.ext import commands
 from emoji import get_emoji_regexp
 from raygun4py import raygunprovider
 
+from utils import badge
 from utils.auth0 import lookup_user, add_badge, get_auth0_token, add_roles
 from utils.person import id_from_mention
 
@@ -125,9 +126,9 @@ class AuthCommands(commands.Cog, name="Authentication"):
         desired_nick = self.de_emojify(desired_nick)
 
         # new_badges = []
-        # for b in badge.get_badges_by_discord_id(account['user_metadata']['discord_id']):
-        #     if 'emoji' in b['details']:
-        #         desired_nick += b['details']['emoji']
+        for b in badge.get_badges_by_discord_id(account['user_metadata']['discord_id']):
+            if 'emoji' in b['details']:
+                desired_nick += b['details']['emoji']
         #         if (not(b['details']['emoji'] in old_badges) and 'earnMessage' in b['details']
         #                 and len(self.get_emoji(b['details']['emoji'])) > 0):
         #             new_badges.append(b['details']['earnMessage'])
