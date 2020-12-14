@@ -179,7 +179,7 @@ Please react with ✅ to approve, 🚫 to delete the role, 🔨 to delete the ro
         except discord.Forbidden:
             if user.nick != desired_nick:
                 if user.dm_channel is None:
-                    user.create_dm()
+                    await user.create_dm()
                 await user.dm_channel.send(f'''
                 Hi there! I was trying to update your nickname, but it looks like you outrank me 😢
 Would you mind setting your nickname to the following?
