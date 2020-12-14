@@ -1,15 +1,15 @@
 import asyncio
+import functools
+import operator
 import os
+import re
 
 import discord
 from auth0.v3.management import Auth0
 from discord import Color
 from discord.ext import commands
-from raygun4py import raygunprovider
 from emoji import get_emoji_regexp
-import functools
-import operator
-import re
+from raygun4py import raygunprovider
 
 from utils import badge
 from utils.auth0 import lookup_user, add_badge, get_auth0_token
@@ -184,8 +184,8 @@ Would you mind setting your nickname to the following?
         await user.remove_roles(*remove_roles)
         await user.add_roles(*desired_roles)
 
-        for new_badge_msg in new_badges:
-            await user.send(new_badge_msg)
+        #        for new_badge_msg in new_badges:
+        #            await user.send(new_badge_msg)
 
         return f"Nickname: {desired_nick}\nAdd roles: {[n.name for n in desired_roles]}\nRemove roles: {[n.name for n in remove_roles]}"
 
