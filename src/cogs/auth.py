@@ -96,6 +96,7 @@ class AuthCommands(commands.Cog, name="Authentication"):
                     cl = raygunprovider.RaygunSender(os.getenv("RAYGUN_TOKEN"))
                     cl.send_exception()
             idx += 1
+        await status_message.edit(content=f'update_all complete! {updated_count} users updated!')
         await ctx.message.add_reaction('👌')
 
     def de_emojify(self, text):
