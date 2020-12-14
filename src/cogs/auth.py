@@ -11,8 +11,7 @@ from discord.ext import commands
 from emoji import get_emoji_regexp
 from raygun4py import raygunprovider
 
-from utils import badge
-from utils.auth0 import lookup_user, add_badge, get_auth0_token
+from utils.auth0 import lookup_user, add_badge, get_auth0_token, add_roles
 from utils.person import id_from_mention
 
 
@@ -82,7 +81,7 @@ class AuthCommands(commands.Cog, name="Authentication"):
         status_message = await ctx.send(f'Found {total} users to update')
         while updated_count < total:
             results = mgmt.users.list(q='user_metadata.discord_id=*', page=idx)
-            users = results['users']
+            users = add_roles(mgmt, results['users'])
             start = results['start']
             total = results['total']  # Just in case of created/deleted accounts during execution
             await status_message.edit(content=f'Updating all users: {start}/{total}')
@@ -100,15 +99,15 @@ class AuthCommands(commands.Cog, name="Authentication"):
 
     def de_emojify(self, text):
         regrex_pattern = re.compile(pattern="["
-                                    u"\U0001F600-\U0001F64F"  # emoticons
-                                    u"\U0001F300-\U0001F5FF"  # symbols & pictographs
-                                    u"\U0001F680-\U0001F6FF"  # transport & map symbols
-                                    u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
-                                    "]+", flags=re.UNICODE)
+                                            u"\U0001F600-\U0001F64F"  # emoticons
+                                            u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                                            u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                                            u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                                            "]+", flags=re.UNICODE)
         return regrex_pattern.sub(r'', text).replace("✔", "")
 
-    async def update_user(self, ctx: commands.context.Context, account, user):
-        old_badges = self.get_emoji(user.nick)
+    async def update_user(self, ctx: commands.context.Context, account, user: discord.Member):
+        # old_badges = self.get_emoji(user.nick)
 
         # Calculate initial information:
         all_pronoun_roles = [
@@ -125,13 +124,13 @@ class AuthCommands(commands.Cog, name="Authentication"):
         desired_nick += ' '  # add spacer between name and badge
         desired_nick = self.de_emojify(desired_nick)
 
-        new_badges = []
-        for b in badge.get_badges_by_discord_id(account['user_metadata']['discord_id']):
-            if 'emoji' in b['details']:
-                desired_nick += b['details']['emoji']
-                if (not(b['details']['emoji'] in old_badges) and 'earnMessage' in b['details']
-                        and len(self.get_emoji(b['details']['emoji'])) > 0):
-                    new_badges.append(b['details']['earnMessage'])
+        # new_badges = []
+        # for b in badge.get_badges_by_discord_id(account['user_metadata']['discord_id']):
+        #     if 'emoji' in b['details']:
+        #         desired_nick += b['details']['emoji']
+        #         if (not(b['details']['emoji'] in old_badges) and 'earnMessage' in b['details']
+        #                 and len(self.get_emoji(b['details']['emoji'])) > 0):
+        #             new_badges.append(b['details']['earnMessage'])
 
         desired_nick = desired_nick.strip()
 
