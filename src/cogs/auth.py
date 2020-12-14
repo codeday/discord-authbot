@@ -183,7 +183,7 @@ Please react with ✅ to approve, 🚫 to delete the role, 🔨 to delete the ro
                 await user.dm_channel.send(f'''
                 Hi there! I was trying to update your nickname, but it looks like you outrank me 😢
 Would you mind setting your nickname to the following?
-> {desired_nick}''')
+`{desired_nick}`''')
         await user.remove_roles(*remove_roles)
         await user.add_roles(*desired_roles)
 
