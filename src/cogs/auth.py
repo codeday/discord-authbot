@@ -144,8 +144,14 @@ Please react with ✅ to approve, 🚫 to delete the role, 🔨 to delete the ro
                 if r in user.roles and r != desired_pronoun_role:
                     remove_roles.append(r)
             desired_roles.append(desired_pronoun_role)
-
-        await user.edit(nick=desired_nick)
+        try:
+            await user.edit(nick=desired_nick)
+        except discord.Forbidden:
+            if user.nick != desired_nick:
+                await user.dm_channel.send(f'''
+                Hi there! I was trying to update your nickname, but it looks like you outrank me 😢
+Would you mind setting your nickname to the following?
+> {desired_nick}''')
         await user.remove_roles(*remove_roles)
         await user.add_roles(*desired_roles)
 
