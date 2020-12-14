@@ -2,12 +2,13 @@ import asyncio
 import os
 
 import discord
+from auth0.v3.management import Auth0
 from discord import Color
 from discord.ext import commands
 from raygun4py import raygunprovider
 
 from utils import badge
-from utils.auth0 import lookup_user, add_badge
+from utils.auth0 import lookup_user, add_badge, get_auth0_token
 from utils.person import id_from_mention
 
 
@@ -62,22 +63,31 @@ class AuthCommands(commands.Cog, name="Authentication"):
 
     @commands.command(name='update_all')
     async def update_all(self, ctx: commands.context.Context):
-        await ctx.message.add_reaction('⌛')
-        await self.bot.request_offline_members(ctx.guild)
-        print(f'updating {len(ctx.guild.members)} users')
-        for user in ctx.guild.members:
-            results = lookup_user(user.id)
-            if len(results) == 1:
-                account = results[0]
+        token = get_auth0_token(domain=os.getenv('AUTH_DOMAIN'))
+        mgmt = Auth0(domain=os.getenv('AUTH_DOMAIN'), token=token)
+        idx = 0
+        updated_count = 0
+        total = mgmt.users.list(q='user_metadata.discord_id=*')['total']
+        status_message = await ctx.send(f'Found {total} users to update')
+        while updated_count < total:
+            results = mgmt.users.list(q='user_metadata.discord_id=*', page=idx)
+            users = results['users']
+            start = results['start']
+            total = results['total']  # Just in case of created/deleted accounts during execution
+            await status_message.edit(content=f'Updating all users: {start}/{total}')
+            for user in users:
+                updated_count += 1
                 try:
-                    await self.update_user(ctx, account, user)
+                    await self.update_user(ctx,
+                                           user,
+                                           ctx.guild.get_member(int(user['user_metadata']['discord_id'])))
                 except:
                     cl = raygunprovider.RaygunSender(os.getenv("RAYGUN_TOKEN"))
                     cl.send_exception()
-        await ctx.message.clear_reaction('⌛')
+            idx += 1
         await ctx.message.add_reaction('👌')
 
-    async def update_user(self, ctx: commands.context.Context, account, user):
+    async def update_user(self, ctx: commands.context.Context, account, user: discord.Member):
         # Calculate initial information:
         all_pronoun_roles = [
             role for role in ctx.guild.roles if role.color.value == self.pronoun_role_color]
