@@ -1,5 +1,6 @@
 import asyncio
 import functools
+import logging
 import operator
 import os
 import re
@@ -14,6 +15,8 @@ from raygun4py import raygunprovider
 from utils import badge
 from utils.auth0 import lookup_user, add_badge, get_auth0_token, add_roles
 from utils.person import id_from_mention
+
+logging.basicConfig(level=logging.INFO)
 
 
 class AuthCommands(commands.Cog, name="Authentication"):
@@ -175,10 +178,10 @@ Please react with ✅ to approve, 🚫 to delete the role, 🔨 to delete the ro
                     remove_roles.append(r)
             desired_roles.append(desired_pronoun_role)
         try:
-            print(f'editing nickname of user "{user.nick}" to "{desired_nick}"')
+            logging.info(f'editing nickname of user "{user.nick}" to "{desired_nick}"')
             await user.edit(nick=desired_nick)
         except discord.Forbidden:
-            print(f'discord.Forbidden editing that user, {user.nick != desired_nick}')
+            logging.info(f'discord.Forbidden editing that user, {user.nick != desired_nick}')
             if user.nick != desired_nick:
                 if user.dm_channel is None:
                     await user.create_dm()
