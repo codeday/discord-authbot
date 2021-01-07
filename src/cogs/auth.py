@@ -133,8 +133,9 @@ class AuthCommands(commands.Cog, name="Authentication"):
 
         # new_badges = []
         for b in badge.get_badges_by_discord_id(account['user_metadata']['discord_id']):
-            if 'emoji' in b['details']:
-                desired_nick += b['details']['emoji']
+            if b is not None:
+                if 'emoji' in b['details']:
+                    desired_nick += b['details']['emoji']
         #         if (not(b['details']['emoji'] in old_badges) and 'earnMessage' in b['details']
         #                 and len(self.get_emoji(b['details']['emoji'])) > 0):
         #             new_badges.append(b['details']['earnMessage'])
@@ -180,10 +181,8 @@ Please react with ✅ to approve, 🚫 to delete the role, 🔨 to delete the ro
                     remove_roles.append(r)
             desired_roles.append(desired_pronoun_role)
         try:
-            logging.info(f'editing nickname of user "{user.nick}" to "{desired_nick}"')
             await user.edit(nick=desired_nick)
         except discord.Forbidden:
-            logging.info(f'discord.Forbidden editing that user, {user.nick != desired_nick}')
             if user.nick != desired_nick:
                 if user.dm_channel is None:
                     await user.create_dm()
