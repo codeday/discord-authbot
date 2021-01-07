@@ -175,8 +175,10 @@ Please react with ✅ to approve, 🚫 to delete the role, 🔨 to delete the ro
                     remove_roles.append(r)
             desired_roles.append(desired_pronoun_role)
         try:
+            print(f'editing nickname of user "{user.nick}" to "{desired_nick}"')
             await user.edit(nick=desired_nick)
         except discord.Forbidden:
+            print(f'discord.Forbidden editing that user, {user.nick != desired_nick}')
             if user.nick != desired_nick:
                 if user.dm_channel is None:
                     await user.create_dm()
