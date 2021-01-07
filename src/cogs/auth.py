@@ -73,7 +73,9 @@ class AuthCommands(commands.Cog, name="Authentication"):
         elif len(results) == 0:
             await ctx.send('''No CodeDay account is linked to that user!''')
         else:
-            pass
+            await ctx.send(f'''More than one CodeDay account is linked to that user, this shouldn't have happened! 
+            Please investigate the following users in auth0: {[account["user_id"] for account in results]}
+            cc <@352212467033833475>''')
 
     @commands.command(name='update_all')
     async def update_all(self, ctx: commands.context.Context):
