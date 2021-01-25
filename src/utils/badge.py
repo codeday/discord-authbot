@@ -51,6 +51,30 @@ def get_badges_by_discord_id(discord_id):
     return badges or []
 
 
+def get_displayed_badges_by_discord_id(discord_id):
+    """returns a list of json objects containing badge details"""
+    query = '''
+    {
+      account {
+        getDisplayedBadges(where: {discordId: "''' + str(discord_id) + '''"}, fresh: true) {
+          id
+          details {
+            emoji
+            id
+            name
+            description
+            emoji
+            earnMessage
+          }
+        }
+      }
+    }
+    '''
+    r = requests.post(graphql_url, json={'query': query})
+    badges = json.loads(r.text)['data']['account']['getUser']['badges']
+    return badges
+
+
 def get_badges_by_username(username):
     """returns a list of json objects containing badge details"""
     query = '''

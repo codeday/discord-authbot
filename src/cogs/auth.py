@@ -56,15 +56,22 @@ class AuthCommands(commands.Cog, name="Authentication"):
     async def update(self, ctx: commands.context.Context, user):
         """Updates a discord user"""
         if type(user) != int:
+            print("1")
             user = id_from_mention(user)
         results = lookup_user(user)
+        print("2")
         if len(results) == 1:
+            print("3")
             account = results[0]
+            print(account)
             user = ctx.guild.get_member(
                 int(account['user_metadata']['discord_id']))
+            print(account['user_metadata']['discord_id'])
+            print("3")
             if user:  # ensure user is in server
+                print("4")
                 debug = await self.update_user(ctx, account, user)
-                # await ctx.channel.send(debug)
+                await ctx.channel.send(debug)
             await ctx.message.add_reaction('👌')
         elif len(results) == 0:
             await ctx.send('''No CodeDay account is linked to that user!''')

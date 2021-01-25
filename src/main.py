@@ -13,16 +13,17 @@ logging.basicConfig(level=logging.INFO)
 welcome_channel_id = getenv('WELCOME_CHANNEL_ID', '756583187307823224')
 
 
-def handle_exception(exc_type, exc_value, exc_traceback):
-    cl = raygunprovider.RaygunSender(getenv("RAYGUN_TOKEN"))
-    cl.send_exception(exc_info=(exc_type, exc_value, exc_traceback))
-
-
-sys.excepthook = handle_exception
+# def handle_exception(exc_type, exc_value, exc_traceback):
+#     cl = raygunprovider.RaygunSender(getenv("RAYGUN_TOKEN"))
+#     cl.send_exception(exc_info=(exc_type, exc_value, exc_traceback))
+#
+#
+# sys.excepthook = handle_exception
 BOT_TOKEN = getenv('BOT_TOKEN')
-bot = SuperBot(command_prefix='a~')
+intents = discord.Intents(messages=True, guilds=True, members=True)
+bot = SuperBot(command_prefix='a~', intents=intents)
 
-initial_cogs = ['cogs.auth']
+initial_cogs = ['cogs.auth', 'cogs.listen']
 for cog in initial_cogs:
     try:
         bot.load_extension(cog)
