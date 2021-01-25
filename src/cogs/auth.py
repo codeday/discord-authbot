@@ -3,7 +3,6 @@ import functools
 import logging
 import operator
 import os
-import re
 
 import discord
 from auth0.v3.management import Auth0
@@ -14,7 +13,7 @@ from raygun4py import raygunprovider
 
 from utils import badge
 from utils.auth0 import lookup_user, add_badge, get_auth0_token, add_roles
-from utils.person import id_from_mention
+from utils.person import id_from_mention, de_emojify
 
 logging.basicConfig(level=logging.INFO)
 
@@ -104,15 +103,6 @@ class AuthCommands(commands.Cog, name="Authentication"):
         await status_message.edit(content=f'update_all complete! {updated_count} users updated!')
         await ctx.message.add_reaction('👌')
 
-    def de_emojify(self, text):
-        regrex_pattern = re.compile(pattern="["
-                                            u"\U0001F600-\U0001F64F"  # emoticons
-                                            u"\U0001F300-\U0001F5FF"  # symbols & pictographs
-                                            u"\U0001F680-\U0001F6FF"  # transport & map symbols
-                                            u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
-                                            "]+", flags=re.UNICODE)
-        return regrex_pattern.sub(r'', text).replace("✔", "")
-
     async def update_user(self, ctx: commands.context.Context, account, user: discord.Member):
         # old_badges = self.get_emoji(user.nick)
 
@@ -129,7 +119,7 @@ class AuthCommands(commands.Cog, name="Authentication"):
         elif 'volunteer' in account['user_metadata']:
             desired_nick = f"{account['given_name']} {account['family_name']}"
         desired_nick += ' '  # add spacer between name and badge
-        desired_nick = self.de_emojify(desired_nick)
+        desired_nick = de_emojify(desired_nick)
 
         # new_badges = []
         for b in badge.get_badges_by_discord_id(account['user_metadata']['discord_id']):
@@ -224,7 +214,7 @@ Would you mind setting your nickname to the following?
 
                         def check(reaction, user):
                             return user.id == payload.user_id and (
-                                str(reaction.emoji) == '🚫' or str(reaction.emoji) == '✅')
+                                    str(reaction.emoji) == '🚫' or str(reaction.emoji) == '✅')
 
                         try:
                             reaction, user = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
@@ -256,7 +246,7 @@ and ban the user <@{user.id}>?')]
 
                             def check(reaction, u):
                                 return u.id == payload.user_id and (
-                                    str(reaction.emoji) == '🚫' or str(reaction.emoji) == '✅')
+                                        str(reaction.emoji) == '🚫' or str(reaction.emoji) == '✅')
 
                             try:
                                 reaction, u = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
