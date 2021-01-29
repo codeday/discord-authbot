@@ -26,14 +26,24 @@ class AuthCommands(commands.Cog, name="Authentication"):
     async def update_all(self, ctx: commands.context.Context):
         await ctx.message.add_reaction('⌛')
         await self.bot.request_offline_members(ctx.guild)
-        print(f'updating {len(ctx.guild.members)} users')
-        for member in ctx.guild.members:
+        member_count = len(ctx.guild.members)
+        print(f'updating {member_count} users')
+        status_message = await ctx.send(f'Found {member_count} users to update')
+        await status_message.edit(content=f'Updating all users: {0}/{member_count} (this message will update every 3 users)')
+        updated_count = 0
+        for index, member in enumerate(ctx.guild.members):
             userInfo = await GQLService.get_user_from_discord_id(member.id)
+            # update status message every 3 members to help rate limiting
+            if index % 3 == 0:
+                await status_message.edit(content=f'Updating all users: {index + 1}/{member_count} (this message will update every 3 users)')
             try:
                 await update_user(self.bot, userInfo)
+                updated_count += 1
+                print("updated!")
             except:
                 cl = raygunprovider.RaygunSender(getenv("RAYGUN_TOKEN"))
                 cl.send_exception()
+        await status_message.edit(content=f'update_all complete! {updated_count} users updated!')
         await ctx.message.clear_reaction('⌛')
         await ctx.message.add_reaction('👌')
 
@@ -63,7 +73,7 @@ class AuthCommands(commands.Cog, name="Authentication"):
 
                         def check(reaction, user):
                             return user.id == payload.user_id and (
-                                str(reaction.emoji) == '🚫' or str(reaction.emoji) == '✅')
+                                    str(reaction.emoji) == '🚫' or str(reaction.emoji) == '✅')
 
                         try:
                             reaction, user = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
@@ -95,7 +105,7 @@ and ban the user <@{user.id}>?')]
 
                             def check(reaction, u):
                                 return u.id == payload.user_id and (
-                                    str(reaction.emoji) == '🚫' or str(reaction.emoji) == '✅')
+                                        str(reaction.emoji) == '🚫' or str(reaction.emoji) == '✅')
 
                             try:
                                 reaction, u = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)

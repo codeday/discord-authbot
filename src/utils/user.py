@@ -14,7 +14,8 @@ async def update_username(bot, userInfo):
                                 [badge_data for badge_data in userInfo["badges"] if badge_data["displayed"] is True]]
             desired_nick = f"{userInfo['name']} {''.join(displayed_badges)}"
         try:
-            await user.edit(nick=desired_nick)
+            if not user.nick == desired_nick:
+                await user.edit(nick=desired_nick)
         except discord.Forbidden:
             if user.nick != desired_nick:
                 if user.dm_channel is None:
@@ -72,9 +73,14 @@ async def update_roles(bot, userInfo):
                 if r in user.roles and r != desired_pronoun_role:
                     remove_roles.append(r)
             desired_roles.append(desired_pronoun_role)
-
-        await user.remove_roles(*remove_roles)
-        await user.add_roles(*desired_roles)
+        for i in desired_roles:
+            if i not in user.roles:
+                await user.add_roles(*desired_roles)
+                break
+        for i in user.roles:
+            if i not in desired_roles:
+                await user.remove_roles(*remove_roles)
+                break
         return f"Add roles: {[n.name for n in desired_roles]}\nRemove roles: {[n.name for n in remove_roles]}"
 
 
