@@ -1,9 +1,9 @@
 import json
-import os
+from os import getenv
 
 import requests
 
-graphql_url = os.getenv('GRAPHQL_URL', 'https://graph.codeday.org')
+graphql_url = getenv('GRAPHQL_URL', 'https://graph.codeday.org')
 
 
 def get_badges():

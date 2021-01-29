@@ -1,9 +1,6 @@
 discord.py==1.6.0
-auth0-python==3.14.0
 raygun4py==4.3.0
-tqdm==4.55.1
 requests==2.25.1
-emoji==0.6.0
 gql~=3.0.0a5
 gql[all]~=3.0.0a5
 PyJWT~=2.0.0

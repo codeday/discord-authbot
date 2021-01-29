@@ -1,18 +1,12 @@
 import asyncio
-import os
+from os import getenv
 
 import discord
-from discord import Color
 from discord.ext import commands
 from raygun4py import raygunprovider
-from emoji import get_emoji_regexp
-import functools
-import operator
-import re
 
-from utils import badge
-from utils.auth0 import lookup_user, add_badge
-from utils.person import id_from_mention
+from services.gqlservice import GQLService
+from utils.user import update_user
 
 
 class AuthCommands(commands.Cog, name="Authentication"):
@@ -20,167 +14,30 @@ class AuthCommands(commands.Cog, name="Authentication"):
 
     def __init__(self, bot):
         self.bot = bot
-        self.role_linked = int(os.getenv('ROLE_LINKED'))
-        self.pronoun_role_color = int(
-            os.getenv('PRONOUN_ROLE_COLOR', '10070710'))
-        self.alert_channel = int(os.getenv('ALERT_CHANNEL'))
-        self.auth0_roles = os.getenv('AUTH0_ROLES')
-
-    def get_emoji(self, em):
-        em_regex = get_emoji_regexp()
-        em_split_emoji = em_regex.split(em)
-        em_split_whitespace = [substr.split() for substr in em_split_emoji]
-        em_split = functools.reduce(operator.concat, em_split_whitespace)
-        return [x for x in em_split if em_regex.match(x)]
-
-    @commands.command(name='account', hidden=True)
-    @commands.has_any_role('Employee')
-    async def check_clear(self, ctx, user):
-        """Lookup a discord users CodeDay account"""
-        user = id_from_mention(user)
-        results = lookup_user(user)
-        if (len(results) == 0):
-            await ctx.send('Not linked')
-        else:
-            await ctx.send(
-                f"[{results[0]['username']}](https://manage.auth0.com/dashboard/us/srnd/users/{results[0]['user_id']})")
-
-    @commands.command(name='add_badge', hidden=True)
-    @commands.has_any_role('Employee')
-    async def award_badge(self, ctx, user, emoji, expiresUTC, title='Badge', description='Badge'):
-        user = id_from_mention(user)
-        add_badge(user, emoji, expiresUTC, title, description)
-        await self.update(ctx, user)
+        self.alert_channel = int(getenv('ALERT_CHANNEL', 689216590297694211))
 
     @commands.command(name='update')
-    async def update(self, ctx: commands.context.Context, user):
-        """Updates a discord user"""
-        if type(user) != int:
-            print("1")
-            user = id_from_mention(user)
-        results = lookup_user(user)
-        print("2")
-        if len(results) == 1:
-            print("3")
-            account = results[0]
-            print(account)
-            user = ctx.guild.get_member(
-                int(account['user_metadata']['discord_id']))
-            print(account['user_metadata']['discord_id'])
-            print("3")
-            if user:  # ensure user is in server
-                print("4")
-                debug = await self.update_user(ctx, account, user)
-                await ctx.channel.send(debug)
-            await ctx.message.add_reaction('👌')
-        elif len(results) == 0:
-            await ctx.send('''No CodeDay account is linked to that user!''')
-        else:
-            pass
+    async def update(self, ctx: commands.context.Context, member: discord.Member):
+        userInfo = await GQLService.get_user_from_discord_id(member.id)
+        await update_user(self.bot, userInfo)
+        await ctx.message.add_reaction('👌')
 
     @commands.command(name='update_all')
     async def update_all(self, ctx: commands.context.Context):
         await ctx.message.add_reaction('⌛')
         await self.bot.request_offline_members(ctx.guild)
         print(f'updating {len(ctx.guild.members)} users')
-        for user in ctx.guild.members:
-            results = lookup_user(user.id)
-            if len(results) == 1:
-                account = results[0]
-                try:
-                    await self.update_user(ctx, account, user)
-                except:
-                    cl = raygunprovider.RaygunSender(os.getenv("RAYGUN_TOKEN"))
-                    cl.send_exception()
+        for member in ctx.guild.members:
+            userInfo = await GQLService.get_user_from_discord_id(member.id)
+            try:
+                await update_user(self.bot, userInfo)
+            except:
+                cl = raygunprovider.RaygunSender(getenv("RAYGUN_TOKEN"))
+                cl.send_exception()
         await ctx.message.clear_reaction('⌛')
         await ctx.message.add_reaction('👌')
 
-    def de_emojify(self, text):
-        regrex_pattern = re.compile(pattern="["
-                                    u"\U0001F600-\U0001F64F"  # emoticons
-                                    u"\U0001F300-\U0001F5FF"  # symbols & pictographs
-                                    u"\U0001F680-\U0001F6FF"  # transport & map symbols
-                                    u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
-                                    "]+", flags=re.UNICODE)
-        return regrex_pattern.sub(r'', text).replace("✔", "")
-
-    async def update_user(self, ctx: commands.context.Context, account, user):
-        old_badges = self.get_emoji(user.nick)
-
-        # Calculate initial information:
-        all_pronoun_roles = [
-            role for role in ctx.guild.roles if role.color.value == self.pronoun_role_color]
-        auth0_role_map = dict(r.split(':')
-                              for r in self.auth0_roles.split(';'))
-
-        # Calculate desired nickname:
-        desired_nick = f"{account['given_name']} {account['family_name'][0].upper()}"
-        if 'display_name_format' in account['user_metadata']:
-            desired_nick = account['name']
-        elif 'volunteer' in account['user_metadata']:
-            desired_nick = f"{account['given_name']} {account['family_name']}"
-        desired_nick += ' '  # add spacer between name and badge
-        desired_nick = self.de_emojify(desired_nick)
-
-        new_badges = []
-        for b in badge.get_badges_by_discord_id(account['user_metadata']['discord_id']):
-            if 'emoji' in b['details']:
-                desired_nick += b['details']['emoji']
-                if (not(b['details']['emoji'] in old_badges) and 'earnMessage' in b['details']
-                        and len(self.get_emoji(b['details']['emoji'])) > 0):
-                    new_badges.append(b['details']['earnMessage'])
-
-        desired_nick = desired_nick.strip()
-
-        # Calculate desired roles:
-        desired_roles = [ctx.guild.get_role(self.role_linked)]
-        remove_roles = []
-
-        # - Add roles for auth0 roles
-        auth0_desired_roles = [auth0_role_map[r['id']]
-                               for r in account['roles']
-                               if r['id'] in auth0_role_map]
-        desired_roles.extend([ctx.guild.get_role(int(r))
-                              for r in auth0_desired_roles])
-        remove_roles.extend([ctx.guild.get_role(int(r))
-                             for r in auth0_role_map.values()
-                             if r not in auth0_desired_roles])
-
-        # -- Add pronoun role
-        if account['user_metadata']['pronoun'] != 'unspecified':
-            desired_pronoun_role = next(
-                (role for role in all_pronoun_roles if role.name ==
-                 account['user_metadata']['pronoun']),
-                None
-            )
-            if desired_pronoun_role is None:
-                desired_pronoun_role = await ctx.guild.create_role(
-                    name=account['user_metadata']['pronoun'],
-                    color=Color(self.pronoun_role_color)
-                )
-                m = await ctx.guild.get_channel(self.alert_channel).send(
-                    f'''Alert: New pronoun role created, {desired_pronoun_role.mention} \
-for user <@{account["user_metadata"]["discord_id"]}>
-Please react with ✅ to approve, 🚫 to delete the role, 🔨 to delete the role and ban the user''')
-                await m.add_reaction('✅')
-                await m.add_reaction('🚫')
-                await m.add_reaction('🔨')
-
-            for r in all_pronoun_roles:
-                if r in user.roles and r != desired_pronoun_role:
-                    remove_roles.append(r)
-            desired_roles.append(desired_pronoun_role)
-
-        await user.edit(nick=desired_nick)
-        await user.remove_roles(*remove_roles)
-        await user.add_roles(*desired_roles)
-
-        for new_badge_msg in new_badges:
-            await user.send(new_badge_msg)
-
-        return f"Nickname: {desired_nick}\nAdd roles: {[n.name for n in desired_roles]}\nRemove roles: {[n.name for n in remove_roles]}"
-
-    @commands.Cog.listener()
+    @commands.Cog.listener("on_raw_reaction_add")
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
         if (
                 payload.channel_id == self.alert_channel

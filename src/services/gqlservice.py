@@ -1,3 +1,4 @@
+
 from gql import gql, Client
 from gql.transport.aiohttp import AIOHTTPTransport
 from gql.transport.websockets import WebsocketsTransport
@@ -21,7 +22,7 @@ class GQLService:
             return gql(query)
 
         fragments = """
-            fragment UserInformation on AccountSubscriptionUser {
+            fragment UserSubscriptionInformation on AccountSubscriptionUser {
               id
               username
               picture
@@ -46,6 +47,14 @@ class GQLService:
         return gql(query + "\n" + fragments)
 
     @staticmethod
+    async def query_http(query, variable_values=None, with_fragments=True):
+        transport = AIOHTTPTransport(
+            url="https://graph.codeday.org/",
+            headers={"authorization": f"Bearer {GQLService.make_token()}"})
+        client = Client(transport=transport, fetch_schema_from_transport=True)
+        return await client.execute_async(GQLService.make_query(query, with_fragments=with_fragments), variable_values=variable_values)
+
+    @staticmethod
     async def subscribe_ws(query, variable_values=None, with_fragments=True):
         token = GQLService.make_token()
         transport = WebsocketsTransport(
@@ -58,11 +67,77 @@ class GQLService:
             yield result
 
     @staticmethod
+    async def get_user_from_discord_id(discord_id):
+        query = """
+            query getUserFromDiscordId($id: String!) {
+              account {
+                getUser(where: {discordId: $id}) {
+                  id
+                  username
+                  picture
+                  name
+                  discordId
+                  pronoun
+                  roles {
+                    id
+                    name
+                  }
+                  badges {
+                    id
+                    displayed
+                    order
+                    details {
+                      emoji
+                    }
+                  }
+                  bio
+                }
+              }
+            }
+        """
+        params = {"id": str(discord_id)}
+        result = await GQLService.query_http(query, variable_values=params, with_fragments=False)
+        return result["account"]["getUser"]
+
+    @staticmethod
+    async def get_user_from_username(username):
+        query = """
+            query getUserFromUsername($username: String!) {
+              account {
+                getUser(where: {username: $username}) {
+                  id
+                  username
+                  picture
+                  name
+                  discordId
+                  pronoun
+                  roles {
+                    id
+                    name
+                  }
+                  badges {
+                    id
+                    displayed
+                    order
+                    details {
+                      emoji
+                    }
+                  }
+                  bio
+                }
+              }
+            }
+        """
+        params = {"username": str(username)}
+        result = await GQLService.query_http(query, variable_values=params)
+        return result["account"]["getUser"]
+
+    @staticmethod
     async def user_update_listener():
         query = """
             subscription {
               userUpdate {
-                  ...UserInformation
+                  ...UserSubscriptionInformation
               }
             }
         """
@@ -76,7 +151,7 @@ class GQLService:
             subscription {
               userBadgeUpdate {
                   type
-                  user {...UserInformation}
+                  user {...UserSubscriptionInformation}
                   badge {
                   id
                   details {
@@ -97,7 +172,7 @@ class GQLService:
         query = """
             subscription {
               userDisplayedBadgesUpdate {
-                  ...UserInformation
+                  ...UserSubscriptionInformation
               }
             }
         """
@@ -110,7 +185,7 @@ class GQLService:
         query = """
             subscription {
               userProfilePictureUpdate {
-                  ...UserInformation
+                  ...UserSubscriptionInformation
               }
             }
         """
@@ -123,7 +198,7 @@ class GQLService:
         query = """
                 subscription {
                   userRoleUpdate {
-                      ...UserInformation
+                      ...UserSubscriptionInformation
                   }
                 }
             """
