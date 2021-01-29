@@ -1,5 +1,6 @@
 from os import getenv
 
+import discord
 from discord import Color
 
 
@@ -7,17 +8,27 @@ async def update_username(bot, userInfo):
     if userInfo and "discordId" in userInfo.keys():
         guild = bot.get_guild(int(getenv("GUILD_ID", 689213562740277361)))
         user = (guild.get_member(int(userInfo["discordId"])))
-        if not userInfo["badges"]:
-            await user.edit(nick=f"{userInfo['name']}")
-            return
-        displayed_badges = [badge["details"]["emoji"] for badge in
-                            [badge_data for badge_data in userInfo["badges"] if badge_data["displayed"] is True]]
-        await user.edit(nick=f"{userInfo['name']} {''.join(displayed_badges)}")
+        desired_nick = userInfo['name']
+        if userInfo["badges"]:
+            displayed_badges = [badge["details"]["emoji"] for badge in
+                                [badge_data for badge_data in userInfo["badges"] if badge_data["displayed"] is True]]
+            desired_nick = f"{userInfo['name']} {''.join(displayed_badges)}"
+        try:
+            await user.edit(nick=desired_nick)
+        except discord.Forbidden:
+            if user.nick != desired_nick:
+                if user.dm_channel is None:
+                    await user.create_dm()
+                await user.dm_channel.send(f'''
+                Hi there! I was trying to update your nickname, but it looks like you outrank me 😢
+Would you mind setting your nickname to the following?
+> `{desired_nick}`''')
+        return f"Nickname: {desired_nick}"
 
 
 async def update_roles(bot, userInfo):
     if userInfo and "discordId" in userInfo.keys():
-        role_linked = int(getenv('ROLE_LINKED'), 714577449408659567)
+        role_linked = int(getenv('ROLE_LINKED', 714577449408659567))
         pronoun_role_color = int(
             getenv('PRONOUN_ROLE_COLOR', '10070710'))
         alert_channel = int(getenv('ALERT_CHANNEL', 689216590297694211))
@@ -64,6 +75,7 @@ async def update_roles(bot, userInfo):
 
         await user.remove_roles(*remove_roles)
         await user.add_roles(*desired_roles)
+        return f"Add roles: {[n.name for n in desired_roles]}\nRemove roles: {[n.name for n in remove_roles]}"
 
 
 async def update_user(bot, user):
