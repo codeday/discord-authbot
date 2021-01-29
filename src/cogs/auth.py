@@ -27,7 +27,6 @@ class AuthCommands(commands.Cog, name="Authentication"):
         await ctx.message.add_reaction('⌛')
         await self.bot.request_offline_members(ctx.guild)
         member_count = len(ctx.guild.members)
-        print(f'updating {member_count} users')
         status_message = await ctx.send(f'Found {member_count} users to update')
         await status_message.edit(content=f'Updating all users: {0}/{member_count} (this message will update every 3 users)')
         updated_count = 0
@@ -39,7 +38,6 @@ class AuthCommands(commands.Cog, name="Authentication"):
             try:
                 await update_user(self.bot, userInfo)
                 updated_count += 1
-                print("updated!")
             except:
                 cl = raygunprovider.RaygunSender(getenv("RAYGUN_TOKEN"))
                 cl.send_exception()
