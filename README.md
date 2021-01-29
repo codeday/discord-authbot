@@ -6,6 +6,7 @@ Linking CodeDay accounts to discord accounts
   * AUTH0_ROLES (role map format "<auth0_role_id1>:<discord_role_id1>;<auth0_role_id2>:<discord_role_id2>...")
   * GQL_ACCOUNT_SECRET (gql account secret)
   * RAYGUN_TOKEN (required for raygun error handling)
+  * BOT_TOKEN (discord bot token)
 * Optional (mostly for development)
   * ALERT_CHANNEL (#moderation channel id)
   * AUTH_CHANNEL (#authentication channel id)
