@@ -71,7 +71,7 @@ class GQLService:
         query = """
             query getUserFromDiscordId($id: String!) {
               account {
-                getUser(where: {discordId: $id}) {
+                getUser(where: {discordId: $id}, fresh: true) {
                   id
                   username
                   picture
@@ -104,7 +104,7 @@ class GQLService:
         query = """
             query getUserFromUsername($username: String!) {
               account {
-                getUser(where: {username: $username}) {
+                getUser(where: {username: $username}, fresh: true) {
                   id
                   username
                   picture
