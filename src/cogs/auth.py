@@ -36,7 +36,8 @@ class AuthCommands(commands.Cog, name="Authentication"):
             if index % 3 == 0:
                 await status_message.edit(content=f'Updating all users: {index + 1}/{member_count} (this message will update every 3 users)')
             try:
-                await update_user(self.bot, userInfo)
+                if userInfo:
+                    await update_user(self.bot, userInfo)
                 updated_count += 1
             except:
                 cl = raygunprovider.RaygunSender(getenv("RAYGUN_TOKEN"))

@@ -10,8 +10,12 @@ async def update_username(bot, userInfo):
         user = (guild.get_member(int(userInfo["discordId"])))
         desired_nick = userInfo['name']
         if userInfo["badges"]:
-            displayed_badges = [badge["details"]["emoji"] for badge in
-                                [badge_data for badge_data in userInfo["badges"] if badge_data["displayed"] is True]]
+            displayed_badges = []
+            if 'displayedBadges' in userInfo:
+                displayed_badges = [badge["details"]["emoji"] for badge in userInfo["displayedBadges"]]
+            else:
+                displayed_badges = [badge["details"]["emoji"] for badge in
+                                    [badge_data for badge_data in userInfo["badges"] if badge_data["displayed"] is True]]
             desired_nick = f"{userInfo['name']} {''.join(displayed_badges)}"
         try:
             if not user.nick == desired_nick:
@@ -78,7 +82,7 @@ async def update_roles(bot, userInfo):
                 await user.add_roles(*desired_roles)
                 break
         for i in user.roles:
-            if i not in desired_roles:
+            if i in remove_roles:
                 await user.remove_roles(*remove_roles)
                 break
         return f"Add roles: {[n.name for n in desired_roles]}\nRemove roles: {[n.name for n in remove_roles]}"
