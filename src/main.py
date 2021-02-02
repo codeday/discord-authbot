@@ -9,8 +9,12 @@ from raygun4py import raygunprovider
 from services.gqlservice import GQLService
 from utils.SuperBot import SuperBot
 from utils.user import update_user
+from gql.transport.websockets import log as websockets_logger
+from gql.transport.requests import log as requests_logger
 
 logging.basicConfig(level=logging.INFO)
+requests_logger.setLevel(logging.WARNING)
+websockets_logger.setLevel(logging.WARNING)
 welcome_channel_id = int(getenv('WELCOME_CHANNEL', 756583187307823224))
 
 

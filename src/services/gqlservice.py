@@ -90,6 +90,14 @@ class GQLService:
                       emoji
                     }
                   }
+                  displayedBadges: badges (displayed: true) {
+                    id
+                    displayed
+                    order
+                    details {
+                      emoji
+                    }
+                  }
                   bio
                 }
               }
@@ -116,6 +124,14 @@ class GQLService:
                     name
                   }
                   badges {
+                    id
+                    displayed
+                    order
+                    details {
+                      emoji
+                    }
+                  }
+                  displayedBadges: badges (displayed: true) {
                     id
                     displayed
                     order
