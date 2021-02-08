@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from os import getenv
 
 import discord
@@ -16,32 +17,36 @@ class AuthCommands(commands.Cog, name="Authentication"):
         self.bot = bot
         self.alert_channel = int(getenv('ALERT_CHANNEL', 689216590297694211))
 
-    @commands.command(name='update')
-    async def update(self, ctx: commands.context.Context, member: discord.Member):
-        userInfo = await GQLService.get_user_from_discord_id(member.id)
-        await update_user(self.bot, userInfo)
+    @commands.command(name='updatee')
+    async def updatee(self, ctx: commands.context.Context, member: discord.Member):
+        user_info = await GQLService.get_user_from_discord_id(member.id)
+        await update_user(self.bot, user_info)
         await ctx.message.add_reaction('👌')
 
-    @commands.command(name='update_all')
-    async def update_all(self, ctx: commands.context.Context):
+    @commands.command(name='update_alll')
+    async def update_alll(self, ctx: commands.context.Context, printDebugMessages: str = ""):
+        debug = False
+        if printDebugMessages.lower() == "true":
+            debug = True
         await ctx.message.add_reaction('⌛')
-        await self.bot.request_offline_members(ctx.guild)
+        # await self.bot.request_offline_members(ctx.guild)
+        await ctx.guild.chunk()
         member_count = len(ctx.guild.members)
         status_message = await ctx.send(f'Found {member_count} users to update')
-        await status_message.edit(content=f'Updating all users: {0}/{member_count} (this message will update every 3 users)')
+        await status_message.edit(
+            content=f'Updating all users: {0}/{member_count} (this message will update every 3 users)')
         updated_count = 0
         for index, member in enumerate(ctx.guild.members):
-            userInfo = await GQLService.get_user_from_discord_id(member.id)
+            user_info = await GQLService.get_user_from_discord_id(member.id)
             # update status message every 3 members to help rate limiting
             if index % 3 == 0:
-                await status_message.edit(content=f'Updating all users: {index + 1}/{member_count} (this message will update every 3 users)')
-            try:
-                if userInfo:
-                    await update_user(self.bot, userInfo)
-                updated_count += 1
-            except:
-                cl = raygunprovider.RaygunSender(getenv("RAYGUN_TOKEN"))
-                cl.send_exception()
+                await status_message.edit(
+                    content=f'Updating all users: {index + 1}/{member_count} (this message will update every 3 users)')
+            if user_info:
+                await update_user(self.bot, user_info)
+                if debug:
+                    logging.info(f"updated user {user_info['username']}")
+            updated_count += 1
         await status_message.edit(content=f'update_all complete! {updated_count} users updated!')
         await ctx.message.clear_reaction('⌛')
         await ctx.message.add_reaction('👌')

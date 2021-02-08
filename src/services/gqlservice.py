@@ -49,7 +49,7 @@ class GQLService:
     @staticmethod
     async def query_http(query, variable_values=None, with_fragments=True):
         transport = AIOHTTPTransport(
-            url="https://graph.codeday.org/",
+            url="http://localhost:4000/",
             headers={"authorization": f"Bearer {GQLService.make_token()}"})
         client = Client(transport=transport, fetch_schema_from_transport=True)
         return await client.execute_async(GQLService.make_query(query, with_fragments=with_fragments), variable_values=variable_values)
@@ -58,7 +58,7 @@ class GQLService:
     async def subscribe_ws(query, variable_values=None, with_fragments=True):
         token = GQLService.make_token()
         transport = WebsocketsTransport(
-            url='ws://graph.codeday.org/subscriptions',
+            url='ws://localhost:4000/subscriptions',
             init_payload={'authorization': 'Bearer ' + token}
         )
         session = Client(transport=transport, fetch_schema_from_transport=True)
@@ -74,7 +74,6 @@ class GQLService:
                 getUser(where: {discordId: $id}, fresh: true) {
                   id
                   username
-                  picture
                   name
                   discordId
                   pronoun
@@ -115,7 +114,6 @@ class GQLService:
                 getUser(where: {username: $username}, fresh: true) {
                   id
                   username
-                  picture
                   name
                   discordId
                   pronoun

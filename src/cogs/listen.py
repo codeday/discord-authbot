@@ -1,3 +1,4 @@
+import logging
 from os import getenv
 
 from discord.ext import commands
@@ -19,9 +20,13 @@ class ListenCog(commands.Cog, name="Listen"):
     async def on_ready(self):
         self.guild = self.bot.get_guild(self.guild_id)
         self.on_user_update.start(self)
+        logging.info(f'Started user update listener')
         self.on_user_badge_update.start(self)
+        logging.info(f'Started badge update listener')
         self.on_user_displayed_badges_update.start(self)
+        logging.info(f'Started displayed badge update listener')
         self.on_user_role_update.start(self)
+        logging.info(f'Started role update listener')
 
     def cog_unload(self):
         self.on_user_update.stop()
@@ -30,10 +35,10 @@ class ListenCog(commands.Cog, name="Listen"):
         self.on_user_role_update.stop()
 
     @subscribe(GQLService.user_update_listener)
-    async def on_user_update(self, userInfo):
-        await update_user(self.bot, userInfo)
-        if userInfo:
-            await self.guild.get_channel(self.auth_channel).send(f"<@{userInfo['discordId']}> updated.")
+    async def on_user_update(self, user_info):
+        await update_user(self.bot, user_info)
+        if user_info:
+            await self.guild.get_channel(self.auth_channel).send(f"<@{user_info['discordId']}> updated.")
 
     @subscribe(GQLService.user_badge_update_listener)
     async def on_user_badge_update(self, data):
@@ -45,16 +50,16 @@ class ListenCog(commands.Cog, name="Listen"):
         await update_user(self.bot, data["user"])
 
     @subscribe(GQLService.user_displayed_badges_update_listener)
-    async def on_user_displayed_badges_update(self, userInfo):
-        await update_username(self.bot, userInfo)
-        if userInfo:
-            await self.guild.get_channel(self.auth_channel).send(f"<@{userInfo['discordId']}> badges updated.")
+    async def on_user_displayed_badges_update(self, user_info):
+        await update_username(self.bot, user_info)
+        if user_info:
+            await self.guild.get_channel(self.auth_channel).send(f"<@{user_info['discordId']}> badges updated.")
 
     @subscribe(GQLService.user_role_update_listener)
-    async def on_user_role_update(self, userInfo):
-        await update_roles(self.bot, userInfo)
-        if userInfo:
-            await self.guild.get_channel(self.auth_channel).send(f"<@{userInfo['discordId']}> roles updated.")
+    async def on_user_role_update(self, user_info):
+        await update_roles(self.bot, user_info)
+        if user_info:
+            await self.guild.get_channel(self.auth_channel).send(f"<@{user_info['discordId']}> roles updated.")
 
 
 def setup(bot):
