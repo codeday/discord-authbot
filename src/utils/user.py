@@ -94,12 +94,10 @@ async def update_roles(bot, user_info):
         for i in desired_roles:
             if i not in user.roles:
                 await user.add_roles(*desired_roles)
-                print("adding roles")
                 break
         for i in user.roles:
             if i in remove_roles:
                 await user.remove_roles(*remove_roles)
-                print("removing roles")
                 break
         return f"Add roles: {[n.name for n in desired_roles]}\nRemove roles: {[n.name for n in remove_roles]}"
 

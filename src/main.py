@@ -50,7 +50,6 @@ async def on_ready():
 
 @bot.event
 async def on_member_join(member):
-    print("test")
     # welcome_channel = bot.get_channel(welcome_channel_id)
     # await welcome_channel.send('👋')
     user_info = await GQLService.get_user_from_discord_id(member.id)
