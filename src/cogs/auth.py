@@ -17,14 +17,14 @@ class AuthCommands(commands.Cog, name="Authentication"):
         self.bot = bot
         self.alert_channel = int(getenv('ALERT_CHANNEL', 689216590297694211))
 
-    @commands.command(name='updatee')
-    async def updatee(self, ctx: commands.context.Context, member: discord.Member):
+    @commands.command(name='update')
+    async def update(self, ctx: commands.context.Context, member: discord.Member):
         user_info = await GQLService.get_user_from_discord_id(member.id)
         await update_user(self.bot, user_info)
         await ctx.message.add_reaction('👌')
 
-    @commands.command(name='update_alll')
-    async def update_alll(self, ctx: commands.context.Context, printDebugMessages: str = ""):
+    @commands.command(name='update_all')
+    async def update_all(self, ctx: commands.context.Context, printDebugMessages: str = ""):
         debug = False
         if printDebugMessages.lower() == "true":
             debug = True
