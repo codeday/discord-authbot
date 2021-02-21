@@ -14,7 +14,8 @@ async def update_username(bot, user_info):
                 displayed_badges = [badge["details"]["emoji"] for badge in user_info["displayedBadges"]]
             else:
                 displayed_badges = [badge["details"]["emoji"] for badge in
-                                    [badge_data for badge_data in user_info["badges"] if badge_data["displayed"] is True]]
+                                    [badge_data for badge_data in user_info["badges"] if
+                                     badge_data["displayed"] is True]]
             desired_nick = f"{user_info['name']} {''.join(displayed_badges)}"
         try:
             if not user.nick == desired_nick:
@@ -25,7 +26,8 @@ async def update_username(bot, user_info):
                     await user.edit(nick=desired_nick)
                     if user.dm_channel is None:
                         await user.create_dm()
-                    await user.dm_channel.send(f'''Hi there! I was trying to update your nickname, but it looks like your name is over 32 characters (Discord limitation).
+                    await user.dm_channel.send(
+                        f'''Hi there! I was trying to update your nickname, but it looks like your name is over 32 characters (Discord limitation).
 I have cut it down to 32 characters which looks like this.
 > `{desired_nick}`
 
@@ -99,7 +101,17 @@ async def update_roles(bot, user_info):
             if i in remove_roles:
                 await user.remove_roles(*remove_roles)
                 break
-        return f"Add roles: {[n.name for n in desired_roles]}\nRemove roles: {[n.name for n in remove_roles]}"
+        # return f"Add roles: {[n.name for n in desired_roles]}\nRemove roles: {[n.name for n in remove_roles]}"
+        return ""
+
+
+async def unlink_user(bot, discordId):
+    guild = bot.get_guild(int(getenv("GUILD_ID", 689213562740277361)))
+    member = guild.get_member(int(discordId))
+    if member:
+        await member.edit(nick=member.name, roles=[])
+        return True
+    return False
 
 
 async def update_user(bot, user):

@@ -1,4 +1,3 @@
-
 from gql import gql, Client
 from gql.transport.aiohttp import AIOHTTPTransport
 from gql.transport.websockets import WebsocketsTransport
@@ -6,12 +5,13 @@ import time
 from jwt import encode
 from os import getenv
 
+
 class GQLService:
     @staticmethod
     def make_token():
         secret = getenv("GQL_ACCOUNT_SECRET")
         message = {
-            "exp": int(time.time()) + (60*60*24*5),
+            "exp": int(time.time()) + (60 * 60 * 24 * 5),
             "scopes": "read:users",
         }
         return encode(message, secret, algorithm='HS256')
@@ -49,16 +49,17 @@ class GQLService:
     @staticmethod
     async def query_http(query, variable_values=None, with_fragments=True):
         transport = AIOHTTPTransport(
-            url="http://localhost:4000/",
+            url="https://graph.codeday.org/",
             headers={"authorization": f"Bearer {GQLService.make_token()}"})
         client = Client(transport=transport, fetch_schema_from_transport=True)
-        return await client.execute_async(GQLService.make_query(query, with_fragments=with_fragments), variable_values=variable_values)
+        return await client.execute_async(GQLService.make_query(query, with_fragments=with_fragments),
+                                          variable_values=variable_values)
 
     @staticmethod
     async def subscribe_ws(query, variable_values=None, with_fragments=True):
         token = GQLService.make_token()
         transport = WebsocketsTransport(
-            url='ws://localhost:4000/subscriptions',
+            url='ws://graph.codeday.org/subscriptions',
             init_payload={'authorization': 'Bearer ' + token}
         )
         session = Client(transport=transport, fetch_schema_from_transport=True)
@@ -219,3 +220,14 @@ class GQLService:
 
         async for result in GQLService.subscribe_ws(query):
             yield result["userRoleUpdate"]
+
+    @staticmethod
+    async def user_unlink_discord_listener():
+        query = """
+                subscription {
+                  userUnlinkDiscord
+                }
+            """
+
+        async for result in GQLService.subscribe_ws(query, with_fragments=False):
+            yield result["userUnlinkDiscord"]

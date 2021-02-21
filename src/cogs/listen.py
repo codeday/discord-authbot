@@ -5,7 +5,7 @@ from discord.ext import commands
 
 from services.gqlservice import GQLService
 from utils.subscriptions import subscribe
-from utils.user import update_username, update_roles, update_user
+from utils.user import update_username, update_roles, update_user, unlink_user
 
 
 class ListenCog(commands.Cog, name="Listen"):
@@ -27,12 +27,15 @@ class ListenCog(commands.Cog, name="Listen"):
         logging.info(f'Started displayed badge update listener')
         self.on_user_role_update.start(self)
         logging.info(f'Started role update listener')
+        self.on_user_unlink_discord.start(self)
+        logging.info(f'Started discord unlink listener')
 
     def cog_unload(self):
         self.on_user_update.stop()
         self.on_user_badge_update.stop()
         self.on_user_displayed_badges_update.stop()
         self.on_user_role_update.stop()
+        self.on_user_unlink_discord.stop()
 
     @subscribe(GQLService.user_update_listener)
     async def on_user_update(self, user_info):
@@ -60,6 +63,11 @@ class ListenCog(commands.Cog, name="Listen"):
         await update_roles(self.bot, user_info)
         if user_info:
             await self.guild.get_channel(self.auth_channel).send(f"<@{user_info['discordId']}> roles updated.")
+
+    @subscribe(GQLService.user_unlink_discord_listener)
+    async def on_user_unlink_discord(self, discordId):
+        if await unlink_user(self.bot, discordId):
+            await self.guild.get_channel(self.auth_channel).send(f"<@{discordId}> discord unlinked.")
 
 
 def setup(bot):
