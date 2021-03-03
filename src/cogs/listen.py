@@ -49,7 +49,7 @@ class ListenCog(commands.Cog, name="Listen"):
         if data["type"] == "grant":
             user = (guild.get_member(int(data["user"]["discordId"])))
             dm_channel = await user.create_dm()
-            await dm_channel.send(data["badge"]["details"]["earnMessage"])
+            await dm_channel.send(data["badge"]["details"]["earnMessage"] + "\n(You can display up to three badges next to your name. To choose which three, visit https://account.codeday.org/ )")
         await update_user(self.bot, data["user"])
 
     @subscribe(GQLService.user_displayed_badges_update_listener)
