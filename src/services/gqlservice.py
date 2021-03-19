@@ -62,7 +62,7 @@ class GQLService:
             url='ws://graph.codeday.org/subscriptions',
             init_payload={'authorization': 'Bearer ' + token}
         )
-        session = Client(transport=transport, fetch_schema_from_transport=True)
+        session = Client(transport=transport)
         async for result in session.subscribe_async(GQLService.make_query(query, with_fragments=with_fragments),
                                                     variable_values=variable_values):
             yield result
