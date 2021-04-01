@@ -46,10 +46,13 @@ class ListenCog(commands.Cog, name="Listen"):
     @subscribe(GQLService.user_badge_update_listener)
     async def on_user_badge_update(self, data):
         guild = self.bot.get_guild(self.guild_id)
-        if data["type"] == "grant":
-            user = (guild.get_member(int(data["user"]["discordId"])))
-            dm_channel = await user.create_dm()
-            await dm_channel.send(data["badge"]["details"]["earnMessage"] + "\n(You can display up to three badges next to your name. To choose which three, visit https://account.codeday.org/ )")
+        if data["type"] == "grant" and data:
+            if 'earnMessage' in data['badge']['details']:
+                if data['badge']['details']['earnmessage'] is not None:
+                    if data['badge']['details']['earnmessage'] != '':
+                        user = (guild.get_member(int(data["user"]["discordId"])))
+                        dm_channel = await user.create_dm()
+                        await dm_channel.send(data["badge"]["details"]["earnMessage"] + "\n(You can display up to three badges next to your name. To choose which three, visit https://account.codeday.org/ )")
         await update_user(self.bot, data["user"])
 
     @subscribe(GQLService.user_displayed_badges_update_listener)
