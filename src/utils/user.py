@@ -2,13 +2,14 @@ from os import getenv
 
 import discord
 from discord import Color
-
+import random
 
 async def update_username(bot, user_info):
     if user_info and "discordId" in user_info.keys():
         guild = bot.get_guild(int(getenv("GUILD_ID", 689213562740277361)))
         user = (guild.get_member(int(user_info["discordId"])))
-        desired_nick = user_info['name']
+        fish = ['🐟','🐠','🐡','🦐']
+        desired_nick = f"{random.choice(fish)} {user_info['name']}"
         if user_info["badges"]:
             if 'displayedBadges' in user_info:
                 displayed_badges = [badge["details"]["emoji"] for badge in user_info["displayedBadges"]]
