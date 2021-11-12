@@ -25,7 +25,7 @@ class AuthCommands(commands.Cog, name="Authentication"):
 
     @commands.command(name='update_all')
     async def update_all(self, ctx: commands.context.Context, printDebugMessages: str = ""):
-        debug = False
+        debug = True
         if printDebugMessages.lower() == "true":
             debug = True
         await ctx.message.add_reaction('⌛')
@@ -43,9 +43,12 @@ class AuthCommands(commands.Cog, name="Authentication"):
                 await status_message.edit(
                     content=f'Updating all users: {index + 1}/{member_count} (this message will update every 3 users)')
             if user_info:
-                await update_user(self.bot, user_info)
-                if debug:
-                    logging.info(f"updated user {user_info['username']}")
+                try:
+                    await update_user(self.bot, user_info)
+                    if debug:
+                        logging.info(f"updated user {user_info['username']}")
+                except:
+                    logging.error(f"error ${user_info['username']}")
             updated_count += 1
         await status_message.edit(content=f'update_all complete! {updated_count} users updated!')
         await ctx.message.clear_reaction('⌛')
