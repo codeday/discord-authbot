@@ -51,7 +51,7 @@ class GQLService:
         transport = AIOHTTPTransport(
             url="https://graph.codeday.org/",
             headers={"authorization": f"Bearer {GQLService.make_token()}"})
-        client = Client(transport=transport, fetch_schema_from_transport=True)
+        client = Client(transport=transport, fetch_schema_from_transport=False)
         return await client.execute_async(GQLService.make_query(query, with_fragments=with_fragments),
                                           variable_values=variable_values)
 
