@@ -104,8 +104,11 @@ class GQLService:
             }
         """
         params = {"id": str(discord_id)}
-        result = await GQLService.query_http(query, variable_values=params, with_fragments=False)
-        return result["account"]["getUser"]
+        try:
+            result = await GQLService.query_http(query, variable_values=params, with_fragments=False)
+            return result["account"]["getUser"]
+        except:
+            return None
 
     @staticmethod
     async def get_user_from_username(username):

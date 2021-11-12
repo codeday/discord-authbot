@@ -54,14 +54,14 @@ async def on_member_join(member):
     # await welcome_channel.send('👋')
     user_info = await GQLService.get_user_from_discord_id(member.id)
     await update_user(bot, user_info)
-    if not str(user_info["discordId"]) == str(member.id):
+    if not user_info or not user_info["discordId"] or str(user_info["discordId"]) != str(member.id):
         if member.dm_channel is None:
             await member.create_dm()
         await member.dm_channel.send(
             '''Hello, human! Welcome to the CodeDay Discord server!
 To gain full access, you MUST link your Discord account to a CodeDay account using the link below:
 https://discord0.codeday.org
-    
+
 We are glad you are joining our community! If you have any questions or need to speak with a staff member, reply to this message and we will be in touch shortly.
 ''')
     else:

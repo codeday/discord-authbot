@@ -37,11 +37,11 @@ class AuthCommands(commands.Cog, name="Authentication"):
             content=f'Updating all users: {0}/{member_count} (this message will update every 3 users)')
         updated_count = 0
         for index, member in enumerate(ctx.guild.members):
-            user_info = await GQLService.get_user_from_discord_id(member.id)
-            # update status message every 3 members to help rate limiting
             if index % 3 == 0:
                 await status_message.edit(
                     content=f'Updating all users: {index + 1}/{member_count} (this message will update every 3 users)')
+            user_info = await GQLService.get_user_from_discord_id(member.id)
+            # update status message every 3 members to help rate limiting
             if user_info:
                 try:
                     await update_user(self.bot, user_info)
