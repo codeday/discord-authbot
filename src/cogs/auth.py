@@ -30,13 +30,13 @@ class AuthCommands(commands.Cog, name="Authentication"):
             debug = True
         await ctx.message.add_reaction('⌛')
         # await self.bot.request_offline_members(ctx.guild)
-        await ctx.guild.chunk()
-        member_count = len(ctx.guild.members)
+        members = await ctx.guild.chunk()
+        member_count = len(members)
         status_message = await ctx.send(f'Found {member_count} users to update')
         await status_message.edit(
             content=f'Updating all users: {0}/{member_count} (this message will update every 3 users)')
         updated_count = 0
-        for index, member in enumerate(ctx.guild.members):
+        for index, member in enumerate(members):
             if index % 3 == 0:
                 await status_message.edit(
                     content=f'Updating all users: {index + 1}/{member_count} (this message will update every 3 users)')
