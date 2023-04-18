@@ -18,7 +18,8 @@ async def update_username(bot, user_info):
                 displayed_badges = [badge["details"]["emoji"] for badge in
                                     [badge_data for badge_data in user_info["badges"] if
                                      badge_data["displayed"] is True]]
-            desired_nick = f"{user_info['name']} {''.join(displayed_badges)}"
+            if(len(displayed_badges) > 0):
+                desired_nick = f"{user_info['name']} {''.join(displayed_badges)}"
         try:
             if not user.nick == desired_nick:
                 try:
