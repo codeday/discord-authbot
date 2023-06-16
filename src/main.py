@@ -15,20 +15,20 @@ from gql.transport.aiohttp import log as aiohttp_logger
 logging.basicConfig(level=logging.INFO)
 aiohttp_logger.setLevel(logging.WARNING)
 websockets_logger.setLevel(logging.WARNING)
-welcome_channel_id = int(getenv('WELCOME_CHANNEL', 756583187307823224))
+welcome_channel_id = int(getenv('WELCOME_CHANNEL', 697888673664073808))
 
 
-def handle_exception(exc_type, exc_value, exc_traceback):
-    cl = raygunprovider.RaygunSender(getenv("RAYGUN_TOKEN"))
-    cl.send_exception(exc_info=(exc_type, exc_value, exc_traceback))
-    if issubclass(exc_type, KeyboardInterrupt):
-        sys.__excepthook__(exc_type, exc_value, exc_traceback)
-        return
+# def handle_exception(exc_type, exc_value, exc_traceback):
+    # cl = raygunprovider.RaygunSender(getenv("RAYGUN_TOKEN"))
+    # cl.send_exception(exc_info=(exc_type, exc_value, exc_traceback))
+    # if issubclass(exc_type, KeyboardInterrupt):
+        # sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        # return
 
-    logging.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+    # logging.error("Error:", exc_info=(exc_type, exc_value, exc_traceback))
 
 
-sys.excepthook = handle_exception
+# sys.excepthook = handle_exception
 BOT_TOKEN = getenv('BOT_TOKEN')
 intents = discord.Intents(messages=True, guilds=True, members=True, reactions=True)
 bot = SuperBot(command_prefix='a~', intents=intents)
