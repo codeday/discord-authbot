@@ -50,8 +50,6 @@ async def on_ready():
 
 @bot.event
 async def on_member_join(member):
-    # welcome_channel = bot.get_channel(welcome_channel_id)
-    # await welcome_channel.send('👋')
     user_info = await GQLService.get_user_from_discord_id(member.id)
     await update_user(bot, user_info)
     if not user_info or not user_info["discordId"] or str(user_info["discordId"]) != str(member.id):
@@ -68,9 +66,13 @@ We are glad you are joining our community! If you have any questions or need to 
         if member.dm_channel is None:
             await member.create_dm()
         await member.dm_channel.send('''Hello there! Welcome to the CodeDay Discord server! Your account is already linked so you are good to go!
-If you have any questions you can ask them in <#689541918178279589> or reply to me and a staff member will be in touch shortly.
+If you have any questions you can ask them in the server, or reply to me and a staff member will be in touch shortly.
 ''')
     welcome_channel = bot.get_channel(welcome_channel_id)
+    if(!welcome_channel) {
+        print('Warning: No welcome channel set')
+        return
+    }
     await welcome_channel.send('👋')
 
 
