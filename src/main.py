@@ -69,7 +69,7 @@ We are glad you are joining our community! If you have any questions or need to 
 If you have any questions you can ask them in the server, or reply to me and a staff member will be in touch shortly.
 ''')
     welcome_channel = bot.get_channel(welcome_channel_id)
-    if welcome_channel is None
+    if welcome_channel is None:
         print('Warning: No welcome channel set')
         return
     await welcome_channel.send('👋')
